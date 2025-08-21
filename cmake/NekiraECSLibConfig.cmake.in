@@ -2,8 +2,6 @@
 
 message(NOTICE "NekiraECSLib: @PROJECT_VERSION@")
 
-# 导入 Core 模块的cmake配置
-include("${CMAKE_CURRENT_LIST_DIR}/CoreConfig.cmake")
 
 # 导入NekiraECSLib的目标cmake配置
 include("${CMAKE_CURRENT_LIST_DIR}/NekiraECSLibTargets.cmake")

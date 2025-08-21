@@ -16,15 +16,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# 导入必要的模块
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 # 添加子目录
-add_subdirectory(Modules)
+add_subdirectory(include/NekiraECS)
 
 # ==============================================
 # 总目标
 # ==============================================
 
 # 定义包含的模块
-set(Module_Targets Core)
+set(Module_Targets NekiraECSCore)
 
 # 收集所有模块目标
 set(NekiraECSLib_Modules)
@@ -40,8 +44,6 @@ add_dependencies(NekiraECSLib ${NekiraECSLib_Modules})
 # ==============================================
 # 安装设置
 # ==============================================
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
 # config文件的路径
 set(CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/NekiraECSLib)
