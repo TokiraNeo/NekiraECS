@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+message(NOTICE "NekiraECSLib: @PROJECT_VERSION@")
+
+
+# 导入NekiraECSLib的目标cmake配置
+include("${CMAKE_CURRENT_LIST_DIR}/NekiraECSLibTargets.cmake")
