@@ -9,8 +9,10 @@
 #pragma once
 
 
-#include <atomic>
 #include <cstdint>
+#include <stack>
+#include <vector>
+
 
 
 namespace NekiraECS
@@ -51,6 +53,10 @@ private:
     {}
 
 private:
+    // Entity的唯一标识符,由两部分组成：
+    // - 高16位：表示Entity的索引
+    // - 低16位：表示Entity的版本
+    // ID: [Index(16 bits)][Version(16 bits)]
     uint32_t ID;
 };
 
@@ -73,24 +79,28 @@ public:
         return instance;
     }
 
-    // 设置允许的最大Entity数量
-    void SetMaxEntityCount(uint32_t count)
-    {
-        MaxEntityCount.store(count);
-    }
-
+    // 判断Entity是否有效
+    bool CheckEntity(const Entity& entity) const;
+    bool CheckEntity(uint16_t index, uint16_t version) const;
 
     // 创建一个新的Entity实例
     Entity CreateEntity();
 
+    // 销毁一个Entity实例
+    void DestroyEntity(const Entity& entity);
+
 private:
     EntityManager() = default;
 
-    // 允许的最大Entity数量，默认值为1000
-    std::atomic<uint32_t> MaxEntityCount{1000};
+    // 获取Entity的索引与版本号
+    static void DecodeEntityID(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion);
 
-    // 上一次创建的Entity ID
-    std::atomic<uint32_t> LastEntityID{0};
+    // 存储每个Entity索引对应的版本号
+    std::vector<uint16_t> Versions;
+
+    // 存储可重用的Entity ID(Index+Version),
+    // 回收池里的ID在回收时已经做了版本号递增处理，因此可以直接使用
+    std::stack<uint32_t> RecycledIDs;
 };
 
 } // namespace NekiraECS
