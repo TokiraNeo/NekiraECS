@@ -7,97 +7,131 @@
  */
 
 #include <Entity/Entity.hpp>
-#include <cstdint>
-
 
 namespace NekiraECS
 {
 
-bool EntityManager::CheckEntity(const Entity& entity) const
+void EntityManager::DecodeEntity(const Entity& entity, EntityIndex_t& outIndex, EntityVersion_t& outVersion)
 {
-    // 提取Entity的索引和版本
-    uint16_t index;
-    uint16_t version;
-    DecodeEntity(entity.ID, index, version);
+    outIndex = entity.ID >> ENTITY_INDEX_SHIFT;
 
-    // 检查索引是否在范围内,且版本号匹配
-    return index < Versions.size() && Versions[index] == version;
+    outVersion = entity.ID & ENTITY_INDEX_MASK;
 }
 
 
-bool EntityManager::CheckEntity(uint16_t index, uint16_t version) const
+EntityIndex_t EntityManager::GetEntityIndex(const Entity& entity)
 {
-    // 检查索引是否在范围内,且版本号匹配
-    return index < Versions.size() && Versions[index] == version;
+    return entity.ID >> ENTITY_INDEX_SHIFT;
 }
 
+
+EntityIndex_t EntityManager::GetEntityIndex(EntityID_t entityID)
+{
+    return entityID >> ENTITY_INDEX_SHIFT;
+}
+
+
+EntityVersion_t EntityManager::GetEntityVersion(const Entity& entity)
+{
+    return entity.ID & ENTITY_INDEX_MASK;
+}
+
+
+EntityVersion_t EntityManager::GetEntityVersion(EntityID_t entityID)
+{
+    return entityID & ENTITY_INDEX_MASK;
+}
+
+bool EntityManager::IsValid(const Entity& entity) const
+{
+    if (entity.ID == INVALID_ENTITYID)
+    {
+        return false;
+    }
+
+    EntityIndex_t   index;
+    EntityVersion_t version;
+    DecodeEntity(entity, index, version);
+
+    return index < EntityVersions.size() && EntityVersions[index] == version;
+}
+
+
+bool EntityManager::IsValid(EntityID_t entityID) const
+{
+    if (entityID == INVALID_ENTITYID)
+    {
+        return false;
+    }
+
+    EntityIndex_t   index = entityID >> ENTITY_INDEX_SHIFT;
+    EntityVersion_t version = entityID & ENTITY_INDEX_MASK;
+
+    return index < EntityVersions.size() && EntityVersions[index] == version;
+}
 
 Entity EntityManager::CreateEntity()
 {
+    EntityID_t id;
 
     // 优先使用回收的ID
     if (!RecycledIDs.empty())
     {
-        // 从回收池中获取一个ID,这里的ID在回收的时候已经做了版本号递增处理，因此直接使用即可
-        uint32_t NewID = RecycledIDs.top();
+        id = RecycledIDs.top();
         RecycledIDs.pop();
-
-        return Entity(NewID);
     }
-    // 如果没有可回收的ID,则创建一个新的ID
     else
     {
-        // 获取当前的Entity数量作为索引
-        auto index = static_cast<uint32_t>(Versions.size());
+        // 创建新的实体索引
+        auto newIndex = static_cast<EntityID_t>(EntityVersions.size());
 
-        // 新的版本号从0开始
-        uint16_t version = 0;
+        // 新版本号从1开始
+        EntityVersion_t newVersion = 1;
 
-        // 扩展版本号池
-        Versions.push_back(version);
+        // 组合成新的实体ID
+        id = (newIndex << ENTITY_INDEX_SHIFT) | newVersion;
 
-        // 组合新的ID
-        uint32_t NewID = (index << 16) | version;
-
-        return Entity(NewID);
+        // 扩展版本号数组
+        EntityVersions.push_back(newVersion);
     }
-}
 
+    return Entity(id);
+}
 
 void EntityManager::DestroyEntity(const Entity& entity)
 {
-    uint16_t index;
-    uint16_t version;
-    DecodeEntity(entity.ID, index, version);
+    EntityIndex_t   index = entity.ID >> ENTITY_INDEX_SHIFT;
+    EntityVersion_t version = entity.ID & ENTITY_INDEX_MASK;
 
-    if (CheckEntity(index, version))
+    if (IsValid(entity.ID))
     {
-        // 对版本号递增，确保原有的ID不再有效
+        // 叠加版本号，使原先ID失效
         version += 1;
-        // 更新版本号池
-        Versions[index] = version;
+        EntityVersions[index] = version;
 
-        // 将ID压入回收池
-        uint32_t recycledID = (static_cast<uint32_t>(index) << 16) | version;
+        // 组合新的ID并回收
+        EntityID_t newID = (index << ENTITY_INDEX_SHIFT) | version;
 
-        RecycledIDs.push(recycledID);
+        RecycledIDs.push(newID);
     }
 }
 
-
-
-void EntityManager::DecodeEntity(const Entity& entity, uint16_t& OutIndex, uint16_t& OutVersion)
+void EntityManager::DestroyEntity(EntityID_t entityID)
 {
-    DecodeEntity(entity.ID, OutIndex, OutVersion);
+    EntityIndex_t   index = entityID >> ENTITY_INDEX_SHIFT;
+    EntityVersion_t version = entityID & ENTITY_INDEX_MASK;
+
+    if (IsValid(entityID))
+    {
+        // 叠加版本号，使原先ID失效
+        version += 1;
+        EntityVersions[index] = version;
+
+        // 组合新的ID并回收
+        EntityID_t newID = (index << ENTITY_INDEX_SHIFT) | version;
+
+        RecycledIDs.push(newID);
+    }
 }
 
-void EntityManager::DecodeEntity(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion)
-{
-    // ID: [Index(16 bits)][Version(16 bits)]
-
-    OutIndex = (ID >> 16) & 0xFFFF;
-
-    OutVersion = ID & 0xFFFF;
-}
-
-} // namespace NekiraECS
+}; // namespace NekiraECS
