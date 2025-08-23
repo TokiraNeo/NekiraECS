@@ -6,7 +6,7 @@
  * For full license information, please view the LICENSE file in the root directory of this project.
  */
 
-#include "Entity/Entity.hpp"
+#include <Entity/Entity.hpp>
 #include <cstdint>
 
 
@@ -18,7 +18,7 @@ bool EntityManager::CheckEntity(const Entity& entity) const
     // 提取Entity的索引和版本
     uint16_t index;
     uint16_t version;
-    DecodeEntityID(entity.ID, index, version);
+    DecodeEntity(entity.ID, index, version);
 
     // 检查索引是否在范围内,且版本号匹配
     return index < Versions.size() && Versions[index] == version;
@@ -68,7 +68,7 @@ void EntityManager::DestroyEntity(const Entity& entity)
 {
     uint16_t index;
     uint16_t version;
-    DecodeEntityID(entity.ID, index, version);
+    DecodeEntity(entity.ID, index, version);
 
     if (CheckEntity(index, version))
     {
@@ -85,7 +85,13 @@ void EntityManager::DestroyEntity(const Entity& entity)
 }
 
 
-void EntityManager::DecodeEntityID(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion)
+
+void EntityManager::DecodeEntity(const Entity& entity, uint16_t& OutIndex, uint16_t& OutVersion)
+{
+    DecodeEntity(entity.ID, OutIndex, OutVersion);
+}
+
+void EntityManager::DecodeEntity(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion)
 {
     // ID: [Index(16 bits)][Version(16 bits)]
 
