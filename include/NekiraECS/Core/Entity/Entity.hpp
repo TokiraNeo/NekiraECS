@@ -89,11 +89,12 @@ public:
     // 销毁一个Entity实例
     void DestroyEntity(const Entity& entity);
 
+    // 获取Entity的索引与版本号
+    static void DecodeEntity(const Entity& entity, uint16_t& OutIndex, uint16_t& OutVersion);
+    static void DecodeEntity(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion);
+
 private:
     EntityManager() = default;
-
-    // 获取Entity的索引与版本号
-    static void DecodeEntityID(uint32_t ID, uint16_t& OutIndex, uint16_t& OutVersion);
 
     // 存储每个Entity索引对应的版本号
     std::vector<uint16_t> Versions;
