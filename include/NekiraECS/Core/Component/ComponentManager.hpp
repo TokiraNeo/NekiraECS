@@ -16,7 +16,7 @@
 namespace NekiraECS
 {
 // 组件管理器
-class ComponentManager : public TSingleton<ComponentManager>
+class ComponentManager final : public TSingleton<ComponentManager>
 {
 public:
 private:
