@@ -39,11 +39,22 @@ public:
 template <typename T>
 class Component : public IComponentBase
 {
+    friend T;
+
 public:
     std::type_index GetTypeIndex() override
     {
         return std::type_index(typeid(T));
     }
+
+private:
+    Component() = default;
+    Component(const Component&) = default;
+    Component& operator=(const Component&) = default;
+    Component(Component&&) noexcept = default;
+    Component& operator=(Component&&) noexcept = default;
+
+    virtual ~Component() = default;
 };
 
 } // namespace NekiraECS
@@ -84,9 +95,11 @@ public:
 // 组件容器
 template <typename T>
     requires std::is_base_of_v<Component<T>, T>
-class ComponentArray : public IComponentArrayBase
+class ComponentArray final : public IComponentArrayBase
 {
 public:
+    ComponentArray() = default;
+
     // 添加组件
     void AddComponent(EntityIndexType entityIndex, T component)
     {
@@ -129,7 +142,7 @@ public:
         EntityIndices.push_back(entityIndex);
     }
 
-    // 获取组件
+    // 获取组件，如果不存在则返回nullptr
     T* GetComponent(EntityIndexType entityIndex)
     {
         if (!HasComponent(entityIndex))
@@ -143,11 +156,13 @@ public:
         return &Components[compIndex];
     }
 
+    // 容器是否为空
     [[nodiscard]] bool IsEmpty() const override
     {
         return Components.empty();
     }
 
+    // 容器大小
     [[nodiscard]] size_t Size() const override
     {
         return Components.size();
