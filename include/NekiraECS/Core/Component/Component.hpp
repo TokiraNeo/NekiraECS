@@ -65,12 +65,10 @@ public:
     virtual ~IComponentArrayBase() = default;
 
     // 容器是否为空
-    [[nodiscard]]
-    virtual bool IsEmpty() const = 0;
+    [[nodiscard]] virtual bool IsEmpty() const = 0;
 
     // 容器大小
-    [[nodiscard]]
-    virtual size_t Size() const = 0;
+    [[nodiscard]] virtual size_t Size() const = 0;
 
     // 从特定Entity中移除该组件
     virtual void RemoveComponent(EntityIndexType entityIndex) = 0;
@@ -145,14 +143,12 @@ public:
         return &Components[compIndex];
     }
 
-    [[nodiscard]]
-    bool IsEmpty() const override
+    [[nodiscard]] bool IsEmpty() const override
     {
         return Components.empty();
     }
 
-    [[nodiscard]]
-    size_t Size() const override
+    [[nodiscard]] size_t Size() const override
     {
         return Components.size();
     }
