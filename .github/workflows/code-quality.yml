@@ -27,7 +27,7 @@ jobs:
 
     - name: Check formatting
       run: |
-        find include source -name "*.hpp" -o -name "*.cpp" | xargs clang-format-15 --dry-run --Werror
+        find include source -name "*.hpp" -o -name "*.cpp" | xargs clang-format-15 --style=file --dry-run --Werror
 
   static-analysis:
     name: Static Analysis
@@ -64,5 +64,3 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
         find source -name "*.cpp" | xargs clang-tidy-15 -p build --checks="-*,readability-*,performance-*,modernize-*,bugprone-*" --warnings-as-errors="" || true
-
-
