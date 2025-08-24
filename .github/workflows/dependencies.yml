@@ -1,0 +1,108 @@
+name: Dependencies
+
+on:
+  schedule:
+    # Run weekly on Sundays
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check CMake version requirements
+      run: |
+        cmake_version=$(cmake --version | head -n1 | sed 's/cmake version //')
+        echo "Current CMake version: $cmake_version"
+        
+        required_version="3.20"
+        echo "Required CMake version: $required_version"
+        
+        if [ "$(printf '%s\n' "$required_version" "$cmake_version" | sort -V | head -n1)" = "$required_version" ]; then
+          echo "✓ CMake version requirement satisfied"
+        else
+          echo "⚠ CMake version requirement not satisfied"
+          exit 1
+        fi
+
+    - name: Check C++ compiler support
+      run: |
+        echo "Checking C++20 support..."
+        
+        # Test with different compilers
+        for compiler in g++ clang++; do
+          if command -v "$compiler" >/dev/null 2>&1; then
+            echo "Testing with $compiler:"
+            version=$($compiler --version | head -n1)
+            echo "  Version: $version"
+            
+            # Create test C++20 file
+            cat > test_cpp20.cpp << EOF
+        #include <concepts>
+        #include <ranges>
+        #include <version>
+        
+        template<typename T>
+        concept Integral = std::integral<T>;
+        
+        int main() {
+            static_assert(__cplusplus >= 202002L, "C++20 required");
+            return 0;
+        }
+        EOF
+            
+            if $compiler -std=c++20 -c test_cpp20.cpp -o test_cpp20.o 2>/dev/null; then
+              echo "  ✓ C++20 support confirmed"
+            else
+              echo "  ⚠ C++20 support not available"
+            fi
+            rm -f test_cpp20.cpp test_cpp20.o
+          fi
+        done
+
+    - name: Analyze project structure
+      run: |
+        echo "Project structure analysis:"
+        echo "Include directories:"
+        find include -type d | head -10
+        
+        echo -e "\nSource directories:"
+        find source -type d 2>/dev/null | head -10 || echo "No source directory found"
+        
+        echo -e "\nHeader files count:"
+        find include -name "*.hpp" | wc -l
+        
+        echo -e "\nSource files count:"
+        find source -name "*.cpp" 2>/dev/null | wc -l || echo "0"
+        
+        echo -e "\nCMake files:"
+        find . -name "CMakeLists.txt" | head -5
+
+    - name: Security scan for common vulnerabilities
+      run: |
+        echo "Scanning for common C++ security patterns..."
+        
+        # Check for potentially unsafe patterns
+        echo "Checking for unsafe string operations:"
+        grep -r "strcpy\|strcat\|sprintf\|gets" include/ source/ 2>/dev/null || echo "✓ No unsafe string operations found"
+        
+        echo "Checking for raw pointer usage:"
+        raw_pointers=$(grep -r "\*[[:space:]]*[a-zA-Z]" include/ source/ 2>/dev/null | wc -l)
+        echo "Raw pointer occurrences: $raw_pointers"
+        
+        echo "Checking for memory management:"
+        new_count=$(grep -r "new[[:space:]]" include/ source/ 2>/dev/null | wc -l)
+        delete_count=$(grep -r "delete[[:space:]]" include/ source/ 2>/dev/null | wc -l)
+        echo "new operations: $new_count"
+        echo "delete operations: $delete_count"
+        
+        if [ $new_count -ne $delete_count ] && [ $new_count -gt 0 ]; then
+          echo "⚠ Potential memory leak: new/delete count mismatch"
+        else
+          echo "✓ new/delete operations balanced"
+        fi
