@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-release:
+    name: Build Release Artifacts
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            compiler: gcc
+            archive_format: tar.gz
+          - os: windows-latest
+            platform: windows
+            compiler: msvc
+            archive_format: zip
+          - os: macos-latest
+            platform: macos
+            compiler: clang
+            archive_format: tar.gz
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get version
+      id: get_version
+      shell: bash
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Set up build environment (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-13 g++-13
+
+    - name: Create build directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          cmake $GITHUB_WORKSPACE -A x64 -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_C_COMPILER=gcc-13
+        else
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        fi
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Install
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: cmake --install . --prefix ${{github.workspace}}/install
+
+    - name: Package (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      working-directory: ${{github.workspace}}
+      run: |
+        tar -czf NekiraECS-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.tar.gz -C install .
+
+    - name: Package (Windows)
+      if: matrix.os == 'windows-latest'
+      working-directory: ${{github.workspace}}
+      shell: powershell
+      run: |
+        Compress-Archive -Path install\* -DestinationPath NekiraECS-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nekira-ecs-${{ matrix.platform }}-release
+        path: |
+          NekiraECS-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.*
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get version
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get commits since last tag
+        if [ $(git tag --list | wc -l) -gt 1 ]; then
+          PREV_TAG=$(git tag --sort=-version:refname | sed -n '2p')
+          CHANGELOG=$(git log --oneline --no-merges ${PREV_TAG}..HEAD | sed 's/^/- /')
+        else
+          CHANGELOG=$(git log --oneline --no-merges | sed 's/^/- /')
+        fi
+        
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        echo "## What's Changed" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "**Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        name: Release ${{ steps.get_version.outputs.VERSION }}
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: false
+        prerelease: ${{ contains(steps.get_version.outputs.VERSION, '-') }}
+        files: |
+          artifacts/*/NekiraECS-*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

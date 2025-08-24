@@ -1,0 +1,68 @@
+name: Code Quality
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+  
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  format-check:
+    name: Code Formatting Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format-15
+
+    - name: Check formatting
+      run: |
+        find include source -name "*.hpp" -o -name "*.cpp" | xargs clang-format-15 --dry-run --Werror
+
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-15 clang-tidy-15
+
+    - name: Create build directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCMAKE_CXX_COMPILER=clang++-15 \
+          -DCMAKE_C_COMPILER=clang-15
+
+    - name: Build for analysis
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build .
+
+    - name: Run clang-tidy
+      working-directory: ${{github.workspace}}
+      run: |
+        find source -name "*.cpp" | xargs clang-tidy-15 -p build --checks="-*,readability-*,performance-*,modernize-*,bugprone-*" --warnings-as-errors="" || true
+
+

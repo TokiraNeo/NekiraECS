@@ -52,4 +52,14 @@ install/
 # 忽略Test文件
 Test/
 
+# CI/CD artifacts and temporary files
+docs/
+*.tar.gz
+*.zip
+*.log
+
+# Doxygen output
+html/
+latex/
+
 

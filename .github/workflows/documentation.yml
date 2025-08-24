@@ -1,0 +1,126 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-docs:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check README links
+      run: |
+        # Check if README files exist and are properly formatted
+        for readme in README.MD Documents/README/README.CN.MD Documents/README/README.EN.MD; do
+          if [ -f "$readme" ]; then
+            echo "✓ Found $readme"
+            # Basic markdown link check
+            if grep -q "!\[.*\](.*.)" "$readme"; then
+              echo "✓ $readme contains images"
+            fi
+            if grep -q "\[.*\](.*.)" "$readme"; then
+              echo "✓ $readme contains links"
+            fi
+          else
+            echo "⚠ Missing $readme"
+          fi
+        done
+
+    - name: Check license
+      run: |
+        if [ -f "LICENSE" ]; then
+          echo "✓ LICENSE file exists"
+          if grep -q "MIT License" LICENSE; then
+            echo "✓ MIT License detected"
+          fi
+        else
+          echo "⚠ LICENSE file missing"
+        fi
+
+    - name: Check code documentation coverage
+      run: |
+        # Count header files and check for basic documentation
+        header_count=$(find include -name "*.hpp" | wc -l)
+        documented_count=$(find include -name "*.hpp" -exec grep -l "/\*\*" {} \; | wc -l)
+        
+        echo "Header files: $header_count"
+        echo "Documented files: $documented_count"
+        
+        if [ $header_count -gt 0 ]; then
+          coverage=$((documented_count * 100 / header_count))
+          echo "Documentation coverage: $coverage%"
+          
+          if [ $coverage -lt 50 ]; then
+            echo "⚠ Low documentation coverage"
+          else
+            echo "✓ Good documentation coverage"
+          fi
+        fi
+
+  generate-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
+
+    - name: Create Doxyfile if not exists
+      run: |
+        if [ ! -f "Doxyfile" ]; then
+          cat > Doxyfile << EOF
+        PROJECT_NAME           = "NekiraECS"
+        PROJECT_NUMBER         = "1.0.0"
+        OUTPUT_DIRECTORY       = docs
+        INPUT                  = include/ README.MD
+        RECURSIVE              = YES
+        GENERATE_HTML          = YES
+        GENERATE_LATEX         = NO
+        EXTRACT_ALL            = YES
+        EXTRACT_PRIVATE        = NO
+        EXTRACT_STATIC         = YES
+        HAVE_DOT               = YES
+        CALL_GRAPH             = YES
+        CALLER_GRAPH           = YES
+        CLASS_DIAGRAMS         = YES
+        COLLABORATION_DIAGRAM  = YES
+        UML_LOOK               = YES
+        TEMPLATE_RELATIONS     = YES
+        INCLUDE_GRAPH          = YES
+        INCLUDED_BY_GRAPH      = YES
+        GRAPHICAL_HIERARCHY    = YES
+        DIRECTORY_GRAPH        = YES
+        DOT_IMAGE_FORMAT       = svg
+        INTERACTIVE_SVG        = YES
+        USE_MDFILE_AS_MAINPAGE = README.MD
+        MARKDOWN_SUPPORT       = YES
+        AUTOLINK_SUPPORT       = YES
+        FILE_PATTERNS          = *.hpp *.cpp *.md
+        EXCLUDE_PATTERNS       = */build/* */.*
+        EOF
+        fi
+
+    - name: Generate documentation
+      run: |
+        doxygen Doxyfile
+        echo "Documentation generated in docs/"
+
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: docs/
+        retention-days: 30
