@@ -11,7 +11,7 @@
 namespace NekiraECS
 {
 
-void EntityManager::DecodeEntity(const Entity& entity, EntityIndex_t& outIndex, EntityVersion_t& outVersion)
+void EntityManager::DecodeEntity(const Entity& entity, EntityIndexType& outIndex, EntityVersionType& outVersion)
 {
     outIndex = entity.ID >> ENTITY_INDEX_SHIFT;
 
@@ -19,25 +19,25 @@ void EntityManager::DecodeEntity(const Entity& entity, EntityIndex_t& outIndex, 
 }
 
 
-EntityIndex_t EntityManager::GetEntityIndex(const Entity& entity)
+EntityIndexType EntityManager::GetEntityIndex(const Entity& entity)
 {
     return entity.ID >> ENTITY_INDEX_SHIFT;
 }
 
 
-EntityIndex_t EntityManager::GetEntityIndex(EntityID_t entityID)
+EntityIndexType EntityManager::GetEntityIndex(EntityIDType entityID)
 {
     return entityID >> ENTITY_INDEX_SHIFT;
 }
 
 
-EntityVersion_t EntityManager::GetEntityVersion(const Entity& entity)
+EntityVersionType EntityManager::GetEntityVersion(const Entity& entity)
 {
     return entity.ID & ENTITY_INDEX_MASK;
 }
 
 
-EntityVersion_t EntityManager::GetEntityVersion(EntityID_t entityID)
+EntityVersionType EntityManager::GetEntityVersion(EntityIDType entityID)
 {
     return entityID & ENTITY_INDEX_MASK;
 }
@@ -49,30 +49,30 @@ bool EntityManager::IsValid(const Entity& entity) const
         return false;
     }
 
-    EntityIndex_t   index;
-    EntityVersion_t version;
+    EntityIndexType   index{};
+    EntityVersionType version{};
     DecodeEntity(entity, index, version);
 
     return index < EntityVersions.size() && EntityVersions[index] == version;
 }
 
 
-bool EntityManager::IsValid(EntityID_t entityID) const
+bool EntityManager::IsValid(EntityIDType entityID) const
 {
     if (entityID == INVALID_ENTITYID)
     {
         return false;
     }
 
-    EntityIndex_t   index = entityID >> ENTITY_INDEX_SHIFT;
-    EntityVersion_t version = entityID & ENTITY_INDEX_MASK;
+    EntityIndexType   index = entityID >> ENTITY_INDEX_SHIFT;
+    EntityVersionType version = entityID & ENTITY_INDEX_MASK;
 
     return index < EntityVersions.size() && EntityVersions[index] == version;
 }
 
 Entity EntityManager::CreateEntity()
 {
-    EntityID_t id;
+    EntityIDType id{};
 
     // 优先使用回收的ID
     if (!RecycledIDs.empty())
@@ -83,10 +83,10 @@ Entity EntityManager::CreateEntity()
     else
     {
         // 创建新的实体索引
-        auto newIndex = static_cast<EntityID_t>(EntityVersions.size());
+        auto newIndex = static_cast<EntityIDType>(EntityVersions.size());
 
         // 新版本号从1开始
-        EntityVersion_t newVersion = 1;
+        EntityVersionType newVersion = 1;
 
         // 组合成新的实体ID
         id = (newIndex << ENTITY_INDEX_SHIFT) | newVersion;
@@ -100,8 +100,8 @@ Entity EntityManager::CreateEntity()
 
 void EntityManager::DestroyEntity(const Entity& entity)
 {
-    EntityIndex_t   index = entity.ID >> ENTITY_INDEX_SHIFT;
-    EntityVersion_t version = entity.ID & ENTITY_INDEX_MASK;
+    EntityIndexType   index = entity.ID >> ENTITY_INDEX_SHIFT;
+    EntityVersionType version = entity.ID & ENTITY_INDEX_MASK;
 
     if (IsValid(entity.ID))
     {
@@ -110,16 +110,16 @@ void EntityManager::DestroyEntity(const Entity& entity)
         EntityVersions[index] = version;
 
         // 组合新的ID并回收
-        EntityID_t newID = (index << ENTITY_INDEX_SHIFT) | version;
+        EntityIDType newID = (index << ENTITY_INDEX_SHIFT) | version;
 
         RecycledIDs.push(newID);
     }
 }
 
-void EntityManager::DestroyEntity(EntityID_t entityID)
+void EntityManager::DestroyEntity(EntityIDType entityID)
 {
-    EntityIndex_t   index = entityID >> ENTITY_INDEX_SHIFT;
-    EntityVersion_t version = entityID & ENTITY_INDEX_MASK;
+    EntityIndexType   index = entityID >> ENTITY_INDEX_SHIFT;
+    EntityVersionType version = entityID & ENTITY_INDEX_MASK;
 
     if (IsValid(entityID))
     {
@@ -128,7 +128,7 @@ void EntityManager::DestroyEntity(EntityID_t entityID)
         EntityVersions[index] = version;
 
         // 组合新的ID并回收
-        EntityID_t newID = (index << ENTITY_INDEX_SHIFT) | version;
+        EntityIDType newID = (index << ENTITY_INDEX_SHIFT) | version;
 
         RecycledIDs.push(newID);
     }
