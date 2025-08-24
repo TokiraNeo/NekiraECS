@@ -11,7 +11,6 @@
 #include <NekiraECS/Core/Entity/Entity.hpp>
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <type_traits>
 #include <typeindex>
 #include <vector>
@@ -24,6 +23,12 @@ namespace NekiraECS
 class IComponentBase
 {
 public:
+    IComponentBase() = default;
+    IComponentBase(const IComponentBase&) = default;
+    IComponentBase(IComponentBase&&) noexcept = default;
+    IComponentBase& operator=(const IComponentBase&) = default;
+    IComponentBase& operator=(IComponentBase&&) noexcept = default;
+
     virtual ~IComponentBase() = default;
 
     virtual std::type_index GetTypeIndex() = 0;
@@ -51,19 +56,27 @@ namespace NekiraECS
 class IComponentArrayBase
 {
 public:
+    IComponentArrayBase() = default;
+    IComponentArrayBase(const IComponentArrayBase&) = default;
+    IComponentArrayBase(IComponentArrayBase&&) noexcept = default;
+    IComponentArrayBase& operator=(const IComponentArrayBase&) = default;
+    IComponentArrayBase& operator=(IComponentArrayBase&&) noexcept = default;
+
     virtual ~IComponentArrayBase() = default;
 
     // 容器是否为空
+    [[nodiscard]]
     virtual bool IsEmpty() const = 0;
 
     // 容器大小
+    [[nodiscard]]
     virtual size_t Size() const = 0;
 
     // 从特定Entity中移除该组件
-    virtual void RemoveComponent(EntityIndex_t entityIndex) = 0;
+    virtual void RemoveComponent(EntityIndexType entityIndex) = 0;
 
     // 检查特定Entity是否拥有该组件
-    virtual bool HasComponent(EntityIndex_t entityIndex) = 0;
+    virtual bool HasComponent(EntityIndexType entityIndex) = 0;
 
     // 清空容器
     virtual void Clear() = 0;
@@ -77,7 +90,7 @@ class ComponentArray : public IComponentArrayBase
 {
 public:
     // 添加组件
-    void AddComponent(EntityIndex_t entityIndex, T component)
+    void AddComponent(EntityIndexType entityIndex, T component)
     {
         // 确保实体索引在ComponentIndices范围内
         if (entityIndex >= ComponentIndices.size())
@@ -119,7 +132,7 @@ public:
     }
 
     // 获取组件
-    T* GetComponent(EntityIndex_t entityIndex)
+    T* GetComponent(EntityIndexType entityIndex)
     {
         if (!HasComponent(entityIndex))
         {
@@ -132,18 +145,20 @@ public:
         return &Components[compIndex];
     }
 
+    [[nodiscard]]
     bool IsEmpty() const override
     {
         return Components.empty();
     }
 
+    [[nodiscard]]
     size_t Size() const override
     {
         return Components.size();
     }
 
     // 从特定Entity中移除该组件
-    void RemoveComponent(EntityIndex_t entityIndex) override
+    void RemoveComponent(EntityIndexType entityIndex) override
     {
         if (!HasComponent(entityIndex))
         {
@@ -190,7 +205,7 @@ public:
 
 
     // 检查特定Entity是否拥有该组件
-    bool HasComponent(EntityIndex_t entityIndex) override
+    bool HasComponent(EntityIndexType entityIndex) override
     {
         return entityIndex < ComponentIndices.size() && ComponentIndices[entityIndex] != INVALID_COMPONENT_INDEX;
     }
@@ -205,7 +220,7 @@ public:
 
 private:
     // 定义无效的组件索引
-    static constexpr int8_t INVALID_COMPONENT_INDEX = -1;
+    static constexpr size_t INVALID_COMPONENT_INDEX = -1;
 
     // 稀疏集合：每个实体索引对应的组件索引。EntityIndex -> ComponentIndex
     std::vector<size_t> ComponentIndices;
@@ -214,7 +229,7 @@ private:
     std::vector<T> Components;
 
     // 紧凑集合：每个组件索引对应的实体索引。ComponentIndex -> EntityIndex
-    std::vector<EntityIndex_t> EntityIndices;
+    std::vector<EntityIndexType> EntityIndices;
 };
 
 } // namespace NekiraECS
