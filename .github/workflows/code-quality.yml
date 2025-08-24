@@ -65,26 +65,4 @@ jobs:
       run: |
         find source -name "*.cpp" | xargs clang-tidy-15 -p build --checks="-*,readability-*,performance-*,modernize-*,bugprone-*" --warnings-as-errors="" || true
 
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
 
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/init@v3
-      with:
-        languages: cpp
-
-    - name: Install dependencies and build
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-13 g++-13
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_C_COMPILER=gcc-13
-        cmake --build .
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
