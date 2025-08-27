@@ -26,6 +26,7 @@ public:
         return instance;
     }
 
+private:
     // 删除拷贝构造函数和赋值操作符
     TSingleton(const TSingleton&) = delete;
     TSingleton& operator=(const TSingleton&) = delete;
@@ -34,7 +35,6 @@ public:
     TSingleton(TSingleton&&) = delete;
     TSingleton& operator=(TSingleton&&) = delete;
 
-private:
     TSingleton() = default;
     virtual ~TSingleton() = default;
 };

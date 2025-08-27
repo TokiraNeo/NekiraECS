@@ -39,11 +39,22 @@ public:
 template <typename T>
 class Component : public IComponentBase
 {
+    friend T;
+
 public:
     std::type_index GetTypeIndex() override
     {
         return std::type_index(typeid(T));
     }
+
+private:
+    Component() = default;
+    Component(const Component&) = default;
+    Component& operator=(const Component&) = default;
+    Component(Component&&) noexcept = default;
+    Component& operator=(Component&&) noexcept = default;
+
+    virtual ~Component() = default;
 };
 
 } // namespace NekiraECS
@@ -74,7 +85,7 @@ public:
     virtual void RemoveComponent(EntityIndexType entityIndex) = 0;
 
     // 检查特定Entity是否拥有该组件
-    virtual bool HasComponent(EntityIndexType entityIndex) = 0;
+    [[nodiscard]] virtual bool HasComponent(EntityIndexType entityIndex) = 0;
 
     // 清空容器
     virtual void Clear() = 0;
@@ -84,9 +95,11 @@ public:
 // 组件容器
 template <typename T>
     requires std::is_base_of_v<Component<T>, T>
-class ComponentArray : public IComponentArrayBase
+class ComponentArray final : public IComponentArrayBase
 {
 public:
+    ComponentArray() = default;
+
     // 添加组件
     void AddComponent(EntityIndexType entityIndex, T component)
     {
@@ -129,7 +142,7 @@ public:
         EntityIndices.push_back(entityIndex);
     }
 
-    // 获取组件
+    // 获取组件，如果不存在则返回nullptr
     T* GetComponent(EntityIndexType entityIndex)
     {
         if (!HasComponent(entityIndex))
@@ -143,11 +156,13 @@ public:
         return &Components[compIndex];
     }
 
+    // 容器是否为空
     [[nodiscard]] bool IsEmpty() const override
     {
         return Components.empty();
     }
 
+    // 容器大小
     [[nodiscard]] size_t Size() const override
     {
         return Components.size();
@@ -201,7 +216,7 @@ public:
 
 
     // 检查特定Entity是否拥有该组件
-    bool HasComponent(EntityIndexType entityIndex) override
+    [[nodiscard]] bool HasComponent(EntityIndexType entityIndex) override
     {
         return entityIndex < ComponentIndices.size() && ComponentIndices[entityIndex] != INVALID_COMPONENT_INDEX;
     }
