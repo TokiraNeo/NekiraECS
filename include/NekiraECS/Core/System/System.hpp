@@ -8,7 +8,33 @@
 
 #pragma once
 
+#include <cstdint>
+#include <string>
 #include <typeindex>
+#include <vector>
+
+
+namespace NekiraECS
+{
+
+// 系统优先级，数值越小优先级越高
+using SystemPriority = int32_t;
+
+// 默认系统优先级
+constexpr SystemPriority SYSTEM_PRIORITY_DEFAULT = 0;
+
+// 系统执行阶段分组
+enum class SystemGroup : uint8_t
+{
+    PreUpdate = 0, // 预更新阶段
+    Update,        // 更新阶段
+    PostUpdate,    // 更新后阶段
+    Render,        // 渲染阶段
+    Cleanup        // 清理阶段
+};
+
+} // namespace NekiraECS
+
 
 namespace NekiraECS
 {
@@ -25,25 +51,44 @@ public:
     virtual ~ISystemBase() = default;
 
     // 获取系统类型
-    virtual std::type_index GetTypeIndex() = 0;
+    [[nodiscard]] virtual std::type_index GetTypeIndex() const = 0;
+
+    // 获取系统名
+    [[nodiscard]] virtual std::string GetName() const = 0;
+
+    // 获取系统分组
+    [[nodiscard]] virtual SystemGroup GetGroup() const = 0;
+
+    // 获取系统优先级
+    [[nodiscard]] virtual SystemPriority GetPriority() const = 0;
+
+    // 获取系统依赖的其他系统名称列表
+    [[nodiscard]] virtual std::vector<std::string> GetDependencies() const = 0;
 
     // 初始化系统,系统注册时调用
     virtual void OnInitialize() = 0;
 
-    /**
-     * @[INFO] 系统执行周期
-     * 系统的每次执行周期分为三个阶段：OnBegin -> OnExecute -> OnEnd
-     * 通过重写OnBegin()，OnExecute()，OnEnd()分别定义系统在对应阶段的行为
-     */
+    // 系统更新
+    virtual void OnUpdate(float deltaTime) = 0;
 
-    // 系统开始执行
-    virtual void OnBegin() = 0;
+    // 系统清理
+    virtual void OnCleanup() = 0;
 
-    // 系统执行期间
-    virtual void OnExecute() = 0;
+    // 系统是否激活
+    [[nodiscard]] bool IsSystemActive() const
+    {
+        return IsActive;
+    }
 
-    // 系统执行结束
-    virtual void OnEnd() = 0;
+    // 设置系统激活状态
+    void SetSystemActive(bool active)
+    {
+        IsActive = active;
+    }
+
+private:
+    // 系统是否激活,默认激活
+    bool IsActive = true;
 };
 
 
@@ -59,33 +104,34 @@ class System : public ISystemBase
     friend T;
 
 public:
-    std::type_index GetTypeIndex() override
+    // 获取系统类型
+    [[nodiscard]] std::type_index GetTypeIndex() const override
     {
         return std::type_index(typeid(T));
     }
 
-    // 初始化系统,系统注册时调用
-    virtual void OnInitialize() override
+    // 获取系统名字
+    [[nodiscard]] std::string GetName() const override
     {
-        // @[INFO] Override this in child.
+        return typeid(T).name();
     }
 
-    // 系统开始执行
-    virtual void OnBegin() override
+    // 获取系统分组，默认为Update
+    [[nodiscard]] SystemGroup GetGroup() const override
     {
-        // @[INFO] Override this in child.
+        return SystemGroup::Update;
     }
 
-    // 系统执行期间
-    virtual void OnExecute() override
+    // 获取系统优先级，默认为0
+    [[nodiscard]] SystemPriority GetPriority() const override
     {
-        // @[INFO] Override this in child.
+        return SYSTEM_PRIORITY_DEFAULT;
     }
 
-    // 系统执行结束
-    virtual void OnEnd() override
+    // 获取系统依赖的其他系统名称列表，默认为空
+    [[nodiscard]] std::vector<std::string> GetDependencies() const override
     {
-        // @[INFO] Override this in child.
+        return {};
     }
 
 private:

@@ -74,7 +74,7 @@ public:
     // 是否拥有该组件
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
-    bool HasComponent(const Entity& entity)
+    [[nodiscard]] bool HasComponent(const Entity& entity)
     {
         if (!EntityManager::Get().IsValid(entity))
         {

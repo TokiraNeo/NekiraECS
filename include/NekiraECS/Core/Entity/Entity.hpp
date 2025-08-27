@@ -87,8 +87,8 @@ public:
     static EntityVersionType GetEntityVersion(EntityIDType entityID);
 
     // 实体是否有效
-    bool IsValid(const Entity& entity) const;
-    bool IsValid(EntityIDType entityID) const;
+    [[nodiscard]] bool IsValid(const Entity& entity) const;
+    [[nodiscard]] bool IsValid(EntityIDType entityID) const;
 
     // 创建一个新实体
     Entity CreateEntity();

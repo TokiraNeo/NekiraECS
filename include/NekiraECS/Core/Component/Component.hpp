@@ -85,7 +85,7 @@ public:
     virtual void RemoveComponent(EntityIndexType entityIndex) = 0;
 
     // 检查特定Entity是否拥有该组件
-    virtual bool HasComponent(EntityIndexType entityIndex) = 0;
+    [[nodiscard]] virtual bool HasComponent(EntityIndexType entityIndex) = 0;
 
     // 清空容器
     virtual void Clear() = 0;
@@ -216,7 +216,7 @@ public:
 
 
     // 检查特定Entity是否拥有该组件
-    bool HasComponent(EntityIndexType entityIndex) override
+    [[nodiscard]] bool HasComponent(EntityIndexType entityIndex) override
     {
         return entityIndex < ComponentIndices.size() && ComponentIndices[entityIndex] != INVALID_COMPONENT_INDEX;
     }
