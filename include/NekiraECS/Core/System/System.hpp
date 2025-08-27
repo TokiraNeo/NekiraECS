@@ -21,17 +21,34 @@ namespace NekiraECS
 using SystemPriority = int32_t;
 
 // 默认系统优先级
-constexpr SystemPriority SYSTEM_PRIORITY_DEFAULT = 0;
+static constexpr SystemPriority SYSTEM_PRIORITY_DEFAULT = 0;
 
-// 系统执行阶段分组
+/**
+ * 系统执行阶段分组
+ * - BeginFrame: 帧开始阶段
+ * - PreUpdate: 预更新阶段
+ * - Update: 更新阶段,是主要的逻辑处理阶段,也是默认的系统分组
+ * - PostUpdate: 后更新阶段
+ * - Presentation: 呈现阶段
+ * - EndFrame: 收尾阶段
+ */
 enum class SystemGroup : uint8_t
 {
-    PreUpdate = 0, // 预更新阶段
-    Update,        // 更新阶段
-    PostUpdate,    // 更新后阶段
-    Render,        // 渲染阶段
-    Cleanup        // 清理阶段
+    BeginFrame = 0,
+    PreUpdate,
+    Update,
+    PostUpdate,
+    Presentation,
+    EndFrame
 };
+
+// 默认的系统执行阶段
+static constexpr SystemGroup SYSTEM_GROUP_DEFAULT = SystemGroup::Update;
+
+// 系统执行阶段分组列表，用于后续依次按组执行
+static const std::vector<SystemGroup> SYSTEM_GROUPS = {SystemGroup::BeginFrame,   SystemGroup::PreUpdate,
+                                                       SystemGroup::Update,       SystemGroup::PostUpdate,
+                                                       SystemGroup::Presentation, SystemGroup::EndFrame};
 
 } // namespace NekiraECS
 
@@ -68,11 +85,11 @@ public:
     // 初始化系统,系统注册时调用
     virtual void OnInitialize() = 0;
 
+    // 反初始化系统,系统销毁时调用
+    virtual void OnDeInitialize() = 0;
+
     // 系统更新
     virtual void OnUpdate(float deltaTime) = 0;
-
-    // 系统清理
-    virtual void OnCleanup() = 0;
 
     // 系统是否激活
     [[nodiscard]] bool IsSystemActive() const
@@ -119,7 +136,7 @@ public:
     // 获取系统分组，默认为Update
     [[nodiscard]] SystemGroup GetGroup() const override
     {
-        return SystemGroup::Update;
+        return SYSTEM_GROUP_DEFAULT;
     }
 
     // 获取系统优先级，默认为0

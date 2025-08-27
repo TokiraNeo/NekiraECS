@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Entity/Entity.hpp"
 #include <NekiraECS/Core/Component/Component.hpp>
 #include <memory>
 #include <unordered_map>
