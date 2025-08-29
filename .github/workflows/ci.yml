@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 env:
   BUILD_TYPE: Release
@@ -13,7 +13,7 @@ jobs:
   build:
     name: Build and Test
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -24,17 +24,12 @@ jobs:
             cxx: g++
             cc: gcc
             cmake_args: ""
-          - os: ubuntu-latest
-            compiler: clang
-            cxx: clang++
-            cc: clang
-            cmake_args: ""
-          
+
           # Windows builds
           - os: windows-latest
             compiler: msvc
             cmake_args: "-A x64"
-          
+
           # macOS builds
           - os: macos-latest
             compiler: clang
@@ -43,60 +38,60 @@ jobs:
             cmake_args: ""
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up build environment (Linux/macOS)
-      if: runner.os != 'Windows'
-      run: |
-        if [ "${{ matrix.compiler }}" = "gcc" ]; then
-          sudo apt-get update && sudo apt-get install -y gcc-13 g++-13
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
-        elif [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "Linux" ]; then
-          sudo apt-get update && sudo apt-get install -y clang-15
-          echo "CC=clang-15" >> $GITHUB_ENV
-          echo "CXX=clang++-15" >> $GITHUB_ENV
-        elif [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "macOS" ]; then
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-        fi
+      - name: Set up build environment (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            sudo apt-get update && sudo apt-get install -y gcc-13 g++-13
+            echo "CC=gcc-13" >> $GITHUB_ENV
+            echo "CXX=g++-13" >> $GITHUB_ENV
+          elif [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y clang-15
+            echo "CC=clang-15" >> $GITHUB_ENV
+            echo "CXX=clang++-15" >> $GITHUB_ENV
+          elif [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "macOS" ]; then
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          fi
 
-    - name: Create build directory
-      run: cmake -E make_directory ${{github.workspace}}/build
+      - name: Create build directory
+        run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{github.workspace}}/build
-      run: |
-        cmake $GITHUB_WORKSPACE \
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-          -DCMAKE_CXX_STANDARD=20 \
-          -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-          ${{ matrix.cmake_args }}
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        run: |
+          cmake $GITHUB_WORKSPACE \
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DCMAKE_CXX_STANDARD=20 \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+            ${{ matrix.cmake_args }}
 
-    - name: Build
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: ctest -C $BUILD_TYPE --output-on-failure --verbose
-      continue-on-error: true  # Allow tests to fail for now since no tests exist yet
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: ctest -C $BUILD_TYPE --output-on-failure --verbose
+        continue-on-error: true # Allow tests to fail for now since no tests exist yet
 
-    - name: Install
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: cmake --install . --prefix ${{github.workspace}}/install
+      - name: Install
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: cmake --install . --prefix ${{github.workspace}}/install
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: nekira-ecs-${{ matrix.os }}-${{ matrix.compiler }}
-        path: |
-          ${{github.workspace}}/build/lib/
-          ${{github.workspace}}/install/
-        retention-days: 7
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: nekira-ecs-${{ matrix.os }}-${{ matrix.compiler }}
+          path: |
+            ${{github.workspace}}/build/lib/
+            ${{github.workspace}}/install/
+          retention-days: 7

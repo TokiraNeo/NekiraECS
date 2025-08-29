@@ -21,7 +21,7 @@ namespace NekiraECS
 using EntityIDType = uint32_t;
 
 // 定义一个无效的实体ID常量
-static constexpr EntityIDType INVALID_ENTITYID = 0;
+constexpr EntityIDType INVALID_ENTITYID = 0;
 
 // 实体索引的类型定义
 using EntityIndexType = uint16_t;
@@ -30,10 +30,10 @@ using EntityIndexType = uint16_t;
 using EntityVersionType = uint16_t;
 
 // 定义实体ID掩码
-static constexpr EntityIndexType ENTITY_INDEX_MASK = 0xFFFF;
+constexpr EntityIndexType ENTITY_INDEX_MASK = 0xFFFF;
 
 // 定义右移位数
-static constexpr uint8_t ENTITY_INDEX_SHIFT = 16;
+constexpr uint8_t ENTITY_INDEX_SHIFT = 16;
 
 } // namespace NekiraECS
 
