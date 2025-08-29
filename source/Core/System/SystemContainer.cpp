@@ -35,12 +35,13 @@ void SystemContainer::RemoveSystem(std::type_index type)
 {
     const auto EQUAL_LAMBDA = [type](const std::unique_ptr<ISystemBase>& sys) { return sys->GetTypeIndex() == type; };
 
-    const auto IT = std::ranges::remove_if(Systems.begin(), Systems.end(), EQUAL_LAMBDA);
+    auto [newBegin, newEnd] = std::ranges::remove_if(Systems.begin(), Systems.end(), EQUAL_LAMBDA);
 
-    Systems.erase(IT.begin(), IT.end());
+    Systems.erase(newBegin, newEnd);
 
     IsSorted = false;
 }
+
 
 ISystemBase* SystemContainer::GetSystem(std::type_index type) const
 {
@@ -55,6 +56,7 @@ ISystemBase* SystemContainer::GetSystem(std::type_index type) const
 
     return nullptr;
 }
+
 
 void SystemContainer::SortingSystems()
 {
@@ -71,6 +73,7 @@ void SystemContainer::SortingSystems()
 
     IsSorted = true;
 }
+
 
 const std::vector<std::unique_ptr<ISystemBase>>& SystemContainer::GetAllSystems() const
 {
