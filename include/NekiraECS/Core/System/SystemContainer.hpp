@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "System.hpp"
 #include <NekiraECS/Core/System/System.hpp>
 #include <memory>
 #include <typeindex>
@@ -24,6 +23,7 @@ class SystemContainer final
 {
 public:
     SystemContainer() = default;
+
 
     // 添加系统
     void AddSystem(std::unique_ptr<ISystemBase> system);

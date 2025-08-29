@@ -35,9 +35,9 @@ void SystemContainer::RemoveSystem(std::type_index type)
 {
     const auto EQUAL_LAMBDA = [type](const std::unique_ptr<ISystemBase>& sys) { return sys->GetTypeIndex() == type; };
 
-    auto it = std::ranges::remove_if(Systems, EQUAL_LAMBDA);
+    const auto IT = std::ranges::remove_if(Systems.begin(), Systems.end(), EQUAL_LAMBDA);
 
-    Systems.erase(it.begin(), it.end());
+    Systems.erase(IT.begin(), IT.end());
 
     IsSorted = false;
 }
@@ -46,11 +46,11 @@ ISystemBase* SystemContainer::GetSystem(std::type_index type) const
 {
     const auto EQUAL_LAMBDA = [type](const std::unique_ptr<ISystemBase>& sys) { return sys->GetTypeIndex() == type; };
 
-    auto it = std::ranges::find_if(Systems, EQUAL_LAMBDA);
+    const auto IT = std::ranges::find_if(Systems.begin(), Systems.end(), EQUAL_LAMBDA);
 
-    if (it != Systems.end())
+    if (IT != Systems.end())
     {
-        return it->get();
+        return IT->get();
     }
 
     return nullptr;
@@ -67,7 +67,7 @@ void SystemContainer::SortingSystems()
     const auto SORT_LAMBDA = [](const std::unique_ptr<ISystemBase>& a, const std::unique_ptr<ISystemBase>& b)
     { return a->GetPriority() < b->GetPriority(); };
 
-    std::ranges::sort(Systems, SORT_LAMBDA);
+    std::ranges::sort(Systems.begin(), Systems.end(), SORT_LAMBDA);
 
     IsSorted = true;
 }
