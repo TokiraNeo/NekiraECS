@@ -1,0 +1,61 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) 2025 TokiraNeo (https://github.com/TokiraNeo)
+ *
+ * For full license information, please view the LICENSE file in the root directory of this project.
+ */
+
+#pragma once
+
+#include "System.hpp"
+#include <NekiraECS/Core/System/System.hpp>
+#include <memory>
+#include <typeindex>
+#include <vector>
+
+
+
+namespace NekiraECS
+{
+
+class SystemContainer final
+{
+public:
+    SystemContainer() = default;
+
+    // 添加系统
+    void AddSystem(std::unique_ptr<ISystemBase> system);
+
+    // 移除系统
+    void RemoveSystem(std::type_index type);
+
+    [[nodiscard]] ISystemBase* GetSystem(std::type_index type) const;
+
+    // 拓扑排序
+    void SortingSystems();
+
+    // 获取所有系统
+    [[nodiscard]] const std::vector<std::unique_ptr<ISystemBase>>& GetAllSystems() const;
+
+private:
+    bool IsSorted = false;
+
+    std::vector<std::unique_ptr<ISystemBase>> Systems;
+};
+
+
+struct SystemContainerHandle final
+{
+    SystemContainerHandle() : Container(std::make_unique<SystemContainer>())
+    {}
+
+    SystemContainer* operator->()
+    {
+        return Container.get();
+    }
+
+private:
+    std::unique_ptr<SystemContainer> Container;
+};
+} // namespace NekiraECS

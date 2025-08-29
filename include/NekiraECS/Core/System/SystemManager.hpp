@@ -8,35 +8,14 @@
 
 #pragma once
 
-#include <NekiraECS/Core/System/System.hpp>
+#include "System.hpp"
+#include "System/SystemContainer.hpp"
+#include <NekiraECS/Core/System/SystemContainer.hpp>
 #include <NekiraECS/Core/Template/TSingleton.hpp>
-#include <memory>
+
+#include <typeindex>
 #include <unordered_map>
-#include <unordered_set>
 
-
-namespace NekiraECS
-{
-
-// 系统信息
-struct SystemInfo
-{
-    SystemInfo() : SystemInstance(nullptr), Priority(SYSTEM_PRIORITY_DEFAULT), Dependencies({})
-    {}
-
-    SystemInfo(std::unique_ptr<ISystemBase> system)
-        : SystemInstance(std::move(system)), Group(SystemInstance->GetGroup()), Priority(SystemInstance->GetPriority()),
-          Dependencies(SystemInstance->GetDependencies())
-    {}
-
-    bool                         IsInitialized = false;
-    std::unique_ptr<ISystemBase> SystemInstance;
-    SystemGroup                  Group = SystemGroup::Update;
-    SystemPriority               Priority;
-    std::vector<std::string>     Dependencies;
-};
-
-} // namespace NekiraECS
 
 
 namespace NekiraECS
@@ -46,26 +25,78 @@ namespace NekiraECS
 class SystemManager final : public TSingleton<SystemManager>
 {
 private:
-    // 每个分组的系统列表
-    std::unordered_map<SystemGroup, std::unique_ptr<SystemInfo>> SystemMap;
+    // 系统分组映射
+    std::unordered_map<SystemGroup, SystemContainerHandle> SystemGroups;
 
-    // 每个分组是否需要重新排序
-    std::unordered_map<SystemGroup, bool> NeedSortingMap;
+    // 需要重新排序的分组
+    std::vector<SystemGroup> DirtyGroups;
 
-    // 对指定阶段的系统进行排序，考虑优先级和依赖关系
-    void SortSystemsInGroup(SystemGroup group);
+    // 标记分组为脏，需要重新排序
+    void MarkGroupDirty(SystemGroup group);
 
-    // 检查指定阶段的系统是否存在循环依赖
-    [[nodiscard]] bool HasCircularDependency(SystemGroup group) const;
+    // 对脏分组进行重新排序
+    void SortSystemGroups();
 
-    // 深度优先搜索辅助函数，用于检测循环依赖
-    bool DFSCircularCheck(const std::string&                                               systemName,
-                          const std::unordered_map<std::string, std::vector<std::string>>& dependencyGraph,
-                          std::unordered_set<std::string>&                                 visited,
-                          const std::unordered_set<std::string>&                           recursionStack) const;
+    // 更新所有系统
+    void UpdateSystemGroups(float deltaTime);
 
 public:
-};
+    // 更新所有系统
+    void Update(float deltaTime);
 
+    // 注册系统
+    template <typename T, typename... Args>
+        requires std::is_base_of_v<System<T>, T>
+    T* RegisterSystem(Args&&... args)
+    {
+        auto system = std::make_unique<T>(std::forward<Args>(args)...);
+        T*   systemPtr = system.get();
+
+        SystemGroup group = system->GetGroup();
+        SystemGroups[group]->AddSystem(std::move(system));
+
+        // 标记该分组需要重新排序
+        MarkGroupDirty(group);
+
+        return systemPtr;
+    }
+
+    // 是否存在某个系统
+    template <typename T>
+        requires std::is_base_of_v<System<T>, T>
+    bool HasSystem()
+    {
+        SystemGroup group = T().GetGroup();
+        auto        type = std::type_index(typeid(T));
+
+        return SystemGroups.contains(group) && SystemGroups[group]->GetSystem(type) != nullptr;
+    }
+
+    // 移除某个系统
+    template <typename T>
+        requires std::is_base_of_v<System<T>, T>
+    void RemoveSystem()
+    {
+        SystemGroup group = T().GetGroup();
+
+        auto type = std::type_index(typeid(T));
+
+        if (!SystemGroups.contains(group))
+        {
+            return;
+        }
+
+        if (auto* system = SystemGroups[group]->GetSystem(type))
+        {
+            // 反初始化系统
+            system->OnDeInitialize();
+
+            SystemGroups[group]->RemoveSystem(type);
+
+            // 标记该分组需要重新排序
+            MarkGroupDirty(group);
+        }
+    }
+};
 
 } // namespace NekiraECS

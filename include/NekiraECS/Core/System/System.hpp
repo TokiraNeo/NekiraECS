@@ -21,7 +21,7 @@ namespace NekiraECS
 using SystemPriority = int32_t;
 
 // 默认系统优先级
-static constexpr SystemPriority SYSTEM_PRIORITY_DEFAULT = 0;
+constexpr SystemPriority SYSTEM_PRIORITY_DEFAULT = 0;
 
 /**
  * 系统执行阶段分组
@@ -43,12 +43,12 @@ enum class SystemGroup : uint8_t
 };
 
 // 默认的系统执行阶段
-static constexpr SystemGroup SYSTEM_GROUP_DEFAULT = SystemGroup::Update;
+constexpr SystemGroup SYSTEM_GROUP_DEFAULT = SystemGroup::Update;
 
 // 系统执行阶段分组列表，用于后续依次按组执行
-static const std::vector<SystemGroup> SYSTEM_GROUPS = {SystemGroup::BeginFrame,   SystemGroup::PreUpdate,
-                                                       SystemGroup::Update,       SystemGroup::PostUpdate,
-                                                       SystemGroup::Presentation, SystemGroup::EndFrame};
+const std::vector<SystemGroup> SYSTEM_GROUPS = {SystemGroup::BeginFrame,   SystemGroup::PreUpdate,
+                                                SystemGroup::Update,       SystemGroup::PostUpdate,
+                                                SystemGroup::Presentation, SystemGroup::EndFrame};
 
 } // namespace NekiraECS
 
@@ -79,8 +79,6 @@ public:
     // 获取系统优先级
     [[nodiscard]] virtual SystemPriority GetPriority() const = 0;
 
-    // 获取系统依赖的其他系统名称列表
-    [[nodiscard]] virtual std::vector<std::string> GetDependencies() const = 0;
 
     // 初始化系统,系统注册时调用
     virtual void OnInitialize() = 0;
@@ -143,12 +141,6 @@ public:
     [[nodiscard]] SystemPriority GetPriority() const override
     {
         return SYSTEM_PRIORITY_DEFAULT;
-    }
-
-    // 获取系统依赖的其他系统名称列表，默认为空
-    [[nodiscard]] std::vector<std::string> GetDependencies() const override
-    {
-        return {};
     }
 
 private:
