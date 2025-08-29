@@ -19,6 +19,7 @@
 namespace NekiraECS
 {
 
+// 系统容器，存储某个分组的所有系统
 class SystemContainer final
 {
 public:
@@ -45,6 +46,7 @@ private:
 };
 
 
+// 系统容器句柄，提供对系统容器的访问
 struct SystemContainerHandle final
 {
     SystemContainerHandle() : Container(std::make_unique<SystemContainer>())
@@ -58,4 +60,5 @@ struct SystemContainerHandle final
 private:
     std::unique_ptr<SystemContainer> Container;
 };
+
 } // namespace NekiraECS

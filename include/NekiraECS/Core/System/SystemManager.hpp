@@ -64,7 +64,7 @@ public:
     // 是否存在某个系统
     template <typename T>
         requires std::is_base_of_v<System<T>, T>
-    bool HasSystem()
+    [[nodiscard]] bool HasSystem()
     {
         SystemGroup group = T().GetGroup();
         auto        type = std::type_index(typeid(T));
