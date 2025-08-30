@@ -8,11 +8,8 @@
 
 #pragma once
 
-#include "System.hpp"
-#include "System/SystemContainer.hpp"
 #include <NekiraECS/Core/System/SystemContainer.hpp>
 #include <NekiraECS/Core/Template/TSingleton.hpp>
-
 #include <typeindex>
 #include <unordered_map>
 
@@ -52,7 +49,15 @@ public:
         auto system = std::make_unique<T>(std::forward<Args>(args)...);
         T*   systemPtr = system.get();
 
+        // 初始化系统
+        system->OnInitialize();
+
+        // 添加到对应分组
         SystemGroup group = system->GetGroup();
+        if (!SystemGroups.contains(group))
+        {
+            SystemGroups[group] = SystemContainerHandle();
+        }
         SystemGroups[group]->AddSystem(std::move(system));
 
         // 标记该分组需要重新排序

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <NekiraECS/Core/Component/Component.hpp>
+#include <NekiraECS/Core/Entity/Entity.hpp>
 #include <memory>
 #include <unordered_map>
 #include <utility>

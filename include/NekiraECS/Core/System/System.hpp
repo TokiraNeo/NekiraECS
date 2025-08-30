@@ -79,7 +79,6 @@ public:
     // 获取系统优先级
     [[nodiscard]] virtual SystemPriority GetPriority() const = 0;
 
-
     // 初始化系统,系统注册时调用
     virtual void OnInitialize() = 0;
 

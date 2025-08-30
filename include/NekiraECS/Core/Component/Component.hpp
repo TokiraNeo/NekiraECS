@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <NekiraECS/Core/Entity/Entity.hpp>
+#include <NekiraECS/Core/Primary/PrimaryType.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <type_traits>
