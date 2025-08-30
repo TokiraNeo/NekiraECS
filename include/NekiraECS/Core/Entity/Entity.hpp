@@ -10,6 +10,7 @@
 
 #include <NekiraECS/Core/Primary/PrimaryType.hpp>
 #include <NekiraECS/Core/Template/TSingleton.hpp>
+#include <functional>
 #include <stack>
 #include <vector>
 
@@ -70,7 +71,12 @@ public:
 
     // 销毁一个实体
     void DestroyEntity(const Entity& entity);
-    void DestroyEntity(EntityIDType entityID);
+
+    // 获取所有有效的Entity
+    [[nodiscard]] std::vector<Entity> GetAllEntities() const;
+
+    // 回调访问所有有效实体
+    void ForEachEntity(const std::function<void(const Entity&)>& callback) const;
 
 private:
     // 每个实体的版本号 EntityIndex -> EntityVersion

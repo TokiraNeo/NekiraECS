@@ -27,14 +27,15 @@ public:
 
     // 实体是否有效
     static bool CheckEntity(const Entity& entity);
-    static bool CheckEntity(EntityIDType entityID);
 
     // 创建实体
     static Entity CreateEntity();
 
     // 销毁实体
     static void DestroyEntity(const Entity& entity);
-    static void DestroyEntity(EntityIDType entityID);
+
+    // 回调访问所有实体
+    static void ForEachEntity(const std::function<void(const Entity&)>& callback);
 
 
     // ===============================
@@ -65,7 +66,7 @@ public:
         return ComponentManager::Get().HasComponent<T>(entity);
     }
 
-    // 移除组件
+    // 移除Entity的某个组件
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
     static void RemoveComponent(const Entity& entity)
@@ -73,6 +74,16 @@ public:
         ComponentManager::Get().RemoveComponent<T>(entity);
     }
 
+    // 移除Entity的所有组件
+    static void RemoveEntityAllComponents(const Entity& entity);
+
+    // 回调访问特定类型的所有组件
+    template <typename T>
+        requires std::is_base_of_v<Component<T>, T>
+    static void ForEachComponent(const std::function<void(T&)>& callback)
+    {
+        ComponentManager::Get().ForEachComponent<T>(callback);
+    }
 
     // ===============================
     // System Management

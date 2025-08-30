@@ -19,10 +19,6 @@ bool Coordinator::CheckEntity(const Entity& entity)
     return EntityManager::Get().IsValid(entity);
 }
 
-bool Coordinator::CheckEntity(EntityIDType entityID)
-{
-    return EntityManager::Get().IsValid(entityID);
-}
 
 Entity Coordinator::CreateEntity()
 {
@@ -31,12 +27,21 @@ Entity Coordinator::CreateEntity()
 
 void Coordinator::DestroyEntity(const Entity& entity)
 {
+    // 移除实体的所有组件
+    ComponentManager::Get().RemoveEntityAllComponents(entity);
+
     EntityManager::Get().DestroyEntity(entity);
 }
 
-void Coordinator::DestroyEntity(EntityIDType entityID)
+void Coordinator::ForEachEntity(const std::function<void(const Entity&)>& callback)
 {
-    EntityManager::Get().DestroyEntity(entityID);
+    EntityManager::Get().ForEachEntity(callback);
 }
+
+void Coordinator::RemoveEntityAllComponents(const Entity& entity)
+{
+    ComponentManager::Get().RemoveEntityAllComponents(entity);
+}
+
 
 } // namespace NekiraECS

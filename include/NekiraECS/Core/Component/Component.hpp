@@ -11,6 +11,7 @@
 #include <NekiraECS/Core/Primary/PrimaryType.hpp>
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <type_traits>
 #include <typeindex>
 #include <vector>
@@ -228,6 +229,16 @@ public:
         Components.clear();
         EntityIndices.clear();
     }
+
+    // 回调访问所有组件
+    void ForEachComponent(const std::function<void(T&)>& callback)
+    {
+        for (auto& comp : Components)
+        {
+            callback(comp);
+        }
+    }
+
 
 private:
     // 定义无效的组件索引
