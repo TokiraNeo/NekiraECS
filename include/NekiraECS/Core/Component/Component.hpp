@@ -104,6 +104,7 @@ public:
     // 添加组件
     void AddComponent(EntityIndexType entityIndex, T component)
     {
+
         // 确保实体索引在ComponentIndices范围内
         if (entityIndex >= ComponentIndices.size())
         {

@@ -19,7 +19,6 @@ bool Coordinator::CheckEntity(const Entity& entity)
     return EntityManager::Get().IsValid(entity);
 }
 
-
 Entity Coordinator::CreateEntity()
 {
     return EntityManager::Get().CreateEntity();
