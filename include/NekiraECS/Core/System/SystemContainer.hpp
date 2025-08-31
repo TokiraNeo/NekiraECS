@@ -24,7 +24,6 @@ class SystemContainer final
 public:
     SystemContainer() = default;
 
-
     // 添加系统
     void AddSystem(std::unique_ptr<ISystemBase> system);
 

@@ -6,7 +6,6 @@
  * For full license information, please view the LICENSE file in the root directory of this project.
  */
 
-#include "System/System.hpp"
 #include <System/SystemManager.hpp>
 #include <algorithm>
 

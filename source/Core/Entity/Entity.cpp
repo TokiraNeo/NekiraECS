@@ -116,22 +116,38 @@ void EntityManager::DestroyEntity(const Entity& entity)
     }
 }
 
-void EntityManager::DestroyEntity(EntityIDType entityID)
+
+std::vector<Entity> EntityManager::GetAllEntities() const
 {
-    EntityIndexType   index = entityID >> ENTITY_INDEX_SHIFT;
-    EntityVersionType version = entityID & ENTITY_INDEX_MASK;
+    std::vector<Entity> entities;
 
-    if (IsValid(entityID))
+    for (size_t index = 0; index < EntityVersions.size(); ++index)
     {
-        // 叠加版本号，使原先ID失效
-        version += 1;
-        EntityVersions[index] = version;
+        EntityVersionType version = EntityVersions[index];
 
-        // 组合新的ID并回收
-        EntityIDType newID = (index << ENTITY_INDEX_SHIFT) | version;
+        EntityIDType id = (static_cast<EntityIDType>(index) << ENTITY_INDEX_SHIFT) | version;
 
-        RecycledIDs.push(newID);
+        if (IsValid(id))
+        {
+            entities.push_back(Entity(id));
+        }
     }
+
+    return entities;
 }
 
+void EntityManager::ForEachEntity(const std::function<void(const Entity&)>& callback) const
+{
+    for (size_t index = 0; index < EntityVersions.size(); ++index)
+    {
+        EntityVersionType version = EntityVersions[index];
+
+        EntityIDType id = (static_cast<EntityIDType>(index) << ENTITY_INDEX_SHIFT) | version;
+
+        if (IsValid(id))
+        {
+            callback(Entity(id));
+        }
+    }
+}
 }; // namespace NekiraECS

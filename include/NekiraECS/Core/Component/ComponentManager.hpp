@@ -9,10 +9,10 @@
 #pragma once
 
 #include <NekiraECS/Core/Component/Component.hpp>
+#include <NekiraECS/Core/Entity/Entity.hpp>
 #include <memory>
 #include <unordered_map>
 #include <utility>
-
 
 
 namespace NekiraECS
@@ -92,7 +92,7 @@ public:
         return ComponentArrays[compTypeIndex]->HasComponent(entityIndex);
     }
 
-    // 移除组件
+    // 移除Entity的某个组件
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
     void RemoveComponent(const Entity& entity)
@@ -140,6 +140,26 @@ public:
         }
 
         return static_cast<ComponentArray<T>*>(ComponentArrays[compTypeIndex].get());
+    }
+
+    // 移除Entity的所有组件
+    void RemoveEntityAllComponents(const Entity& entity);
+
+    // 回调访问特定类型的所有组件
+    template <typename T>
+        requires std::is_base_of_v<Component<T>, T>
+    void ForEachComponent(const std::function<void(T&)>& callback)
+    {
+        auto compType = std::type_index(typeid(T));
+
+        if (!ComponentArrays.contains(compType))
+        {
+            return;
+        }
+
+        auto* compArray = static_cast<ComponentArray<T>*>(ComponentArrays[compType].get());
+
+        compArray->ForEachComponent(callback);
     }
 
 private:

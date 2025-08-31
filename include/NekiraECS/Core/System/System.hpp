@@ -79,7 +79,6 @@ public:
     // 获取系统优先级
     [[nodiscard]] virtual SystemPriority GetPriority() const = 0;
 
-
     // 初始化系统,系统注册时调用
     virtual void OnInitialize() = 0;
 
@@ -142,6 +141,18 @@ public:
     {
         return SYSTEM_PRIORITY_DEFAULT;
     }
+
+    // 初始化系统,系统注册时调用
+    void OnInitialize() override
+    {}
+
+    // 反初始化系统,系统销毁时调用
+    void OnDeInitialize() override
+    {}
+
+    // 系统更新
+    void OnUpdate(float deltaTime) override
+    {}
 
 private:
     System() = default;
