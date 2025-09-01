@@ -54,7 +54,7 @@ bool EntityManager::IsValid(const Entity& entity) const
     std::cout << "当前所有实体版本号: ";
     for (size_t i = 0; i < EntityVersions.size(); ++i)
     {
-        std::cout << "[" << i << ": " << EntityVersions[i] << "] " << " ";
+        std::cout << "[" << i << ": " << EntityVersions[i] << "] ";
     }
 
     std::cout << '\n' << "Entity ID: " << entity.ID << '\n';

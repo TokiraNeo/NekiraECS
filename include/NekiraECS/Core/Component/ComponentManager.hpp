@@ -22,7 +22,6 @@ namespace NekiraECS
 class ComponentManager final : public TSingleton<ComponentManager>
 {
 public:
-    // @[TODO] 这里的添加组件似乎有点问题，组件似乎并没有被正确添加
     // 添加组件
     template <typename T, typename... Args>
         requires std::is_base_of_v<Component<T>, T>
