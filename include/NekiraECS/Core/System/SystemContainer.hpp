@@ -51,6 +51,28 @@ struct SystemContainerHandle final
     SystemContainerHandle() : Container(std::make_unique<SystemContainer>())
     {}
 
+    SystemContainerHandle(const SystemContainerHandle&) = delete;
+    SystemContainerHandle& operator=(const SystemContainerHandle&) = delete;
+
+    SystemContainerHandle(SystemContainerHandle&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Container = std::move(other.Container);
+        }
+    }
+
+    SystemContainerHandle& operator=(SystemContainerHandle&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Container = std::move(other.Container);
+        }
+        return *this;
+    }
+
+    ~SystemContainerHandle() = default;
+
     SystemContainer* operator->()
     {
         return Container.get();

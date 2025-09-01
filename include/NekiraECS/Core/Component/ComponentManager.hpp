@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <NekiraECS/Core/Component/Component.hpp>
+#include <NekiraECS/Core/Component/ComponentArray.hpp>
 #include <NekiraECS/Core/Entity/Entity.hpp>
-#include <memory>
 #include <unordered_map>
 #include <utility>
+
 
 
 namespace NekiraECS
@@ -21,6 +21,7 @@ namespace NekiraECS
 class ComponentManager final : public TSingleton<ComponentManager>
 {
 public:
+    // @[TODO] 这里的添加组件似乎有点问题，组件似乎并没有被正确添加
     // 添加组件
     template <typename T, typename... Args>
         requires std::is_base_of_v<Component<T>, T>
@@ -38,12 +39,13 @@ public:
         // 如果该类型的组件数组不存在，则创建一个新的
         if (!ComponentArrays.contains(compTypeIndex))
         {
-            ComponentArrays[compTypeIndex] = std::make_unique<ComponentArray<T>>();
+            auto handle = MakeComponentArrayHandle<T>();
+            ComponentArrays[compTypeIndex] = std::move(handle);
         }
 
-        auto* compArray = static_cast<ComponentArray<T>*>(ComponentArrays[compTypeIndex].get());
+        auto* compArray = ComponentArrays[compTypeIndex].As<T>();
 
-        compArray->AddComponent(entityIndex, T(std::forward<Args>(args)...));
+        compArray->AddComponent(entityIndex, std::forward<Args>(args)...);
     }
 
     // 获取组件，如果不存在或实体无效则返回nullptr
@@ -65,7 +67,7 @@ public:
             return nullptr;
         }
 
-        auto* compArray = static_cast<ComponentArray<T>*>(ComponentArrays[compTypeIndex].get());
+        auto* compArray = ComponentArrays[compTypeIndex].As<T>();
 
         return compArray->GetComponent(entityIndex);
     }
@@ -139,7 +141,7 @@ public:
             return nullptr;
         }
 
-        return static_cast<ComponentArray<T>*>(ComponentArrays[compTypeIndex].get());
+        return ComponentArrays[compTypeIndex].As<T>();
     }
 
     // 移除Entity的所有组件
@@ -157,13 +159,13 @@ public:
             return;
         }
 
-        auto* compArray = static_cast<ComponentArray<T>*>(ComponentArrays[compType].get());
+        auto* compArray = ComponentArrays[compType].As<T>();
 
         compArray->ForEachComponent(callback);
     }
 
 private:
     // 每种组件类型对应的组件数组
-    std::unordered_map<std::type_index, std::unique_ptr<IComponentArrayBase>> ComponentArrays;
+    std::unordered_map<std::type_index, ComponentArrayHandle> ComponentArrays;
 };
 } // namespace NekiraECS
