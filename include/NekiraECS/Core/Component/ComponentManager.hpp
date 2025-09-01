@@ -9,11 +9,12 @@
 #pragma once
 
 #include <NekiraECS/Core/Component/ComponentArray.hpp>
-#include <NekiraECS/Core/Entity/Entity.hpp>
+#include <NekiraECS/Core/Template/TSingleton.hpp>
 #include <unordered_map>
 #include <utility>
 
-
+// [DEBUG]
+#include <iostream>
 
 namespace NekiraECS
 {
@@ -25,23 +26,22 @@ public:
     // 添加组件
     template <typename T, typename... Args>
         requires std::is_base_of_v<Component<T>, T>
-    void AddComponent(const Entity& entity, Args&&... args)
+    void AddComponent(EntityIndexType entityIndex, Args&&... args)
     {
-        if (!EntityManager::Get().IsValid(entity))
-        {
-            return;
-        }
-
-        auto entityIndex = EntityManager::GetEntityIndex(entity);
-
         auto compTypeIndex = std::type_index(typeid(T));
 
         // 如果该类型的组件数组不存在，则创建一个新的
         if (!ComponentArrays.contains(compTypeIndex))
         {
+            // [DEBUG]
+            std::cout << "Creating component array for type: " << typeid(T).name() << '\n';
+
             auto handle = MakeComponentArrayHandle<T>();
             ComponentArrays[compTypeIndex] = std::move(handle);
         }
+
+        // [DEBUG]
+        std::cout << "Added component of type: " << typeid(T).name() << " to entity index: " << entityIndex << '\n';
 
         auto* compArray = ComponentArrays[compTypeIndex].As<T>();
 
@@ -51,15 +51,8 @@ public:
     // 获取组件，如果不存在或实体无效则返回nullptr
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
-    T* GetComponent(const Entity& entity)
+    T* GetComponent(EntityIndexType entityIndex)
     {
-        if (!EntityManager::Get().IsValid(entity))
-        {
-            return nullptr;
-        }
-
-        auto entityIndex = EntityManager::GetEntityIndex(entity);
-
         auto compTypeIndex = std::type_index(typeid(T));
 
         if (!ComponentArrays.contains(compTypeIndex))
@@ -75,15 +68,8 @@ public:
     // 是否拥有该组件
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
-    [[nodiscard]] bool HasComponent(const Entity& entity)
+    [[nodiscard]] bool HasComponent(EntityIndexType entityIndex)
     {
-        if (!EntityManager::Get().IsValid(entity))
-        {
-            return false;
-        }
-
-        auto entityIndex = EntityManager::GetEntityIndex(entity);
-
         auto compTypeIndex = std::type_index(typeid(T));
 
         if (!ComponentArrays.contains(compTypeIndex))
@@ -97,15 +83,8 @@ public:
     // 移除Entity的某个组件
     template <typename T>
         requires std::is_base_of_v<Component<T>, T>
-    void RemoveComponent(const Entity& entity)
+    void RemoveComponent(EntityIndexType entityIndex)
     {
-        if (!EntityManager::Get().IsValid(entity))
-        {
-            return;
-        }
-
-        auto entityIndex = EntityManager::GetEntityIndex(entity);
-
         auto compTypeIndex = std::type_index(typeid(T));
 
         if (!ComponentArrays.contains(compTypeIndex))
@@ -145,7 +124,7 @@ public:
     }
 
     // 移除Entity的所有组件
-    void RemoveEntityAllComponents(const Entity& entity);
+    void RemoveEntityAllComponents(EntityIndexType entityIndex);
 
     // 回调访问特定类型的所有组件
     template <typename T>

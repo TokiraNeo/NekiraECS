@@ -26,7 +26,7 @@ using EntityIndexType = uint16_t;
 using EntityVersionType = uint16_t;
 
 // 定义实体ID掩码
-constexpr EntityIndexType ENTITY_INDEX_MASK = 0xFFFF;
+constexpr EntityVersionType ENTITY_VERSION_MASK = 0xFFFF;
 
 // 定义右移位数
 constexpr uint8_t ENTITY_INDEX_SHIFT = 16;

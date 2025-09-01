@@ -8,6 +8,9 @@
 
 #include <Entity/Entity.hpp>
 
+// [DEBUG]
+#include <iostream>
+
 namespace NekiraECS
 {
 
@@ -15,7 +18,7 @@ void EntityManager::DecodeEntity(const Entity& entity, EntityIndexType& outIndex
 {
     outIndex = entity.ID >> ENTITY_INDEX_SHIFT;
 
-    outVersion = entity.ID & ENTITY_INDEX_MASK;
+    outVersion = entity.ID & ENTITY_VERSION_MASK;
 }
 
 
@@ -33,17 +36,29 @@ EntityIndexType EntityManager::GetEntityIndex(EntityIDType entityID)
 
 EntityVersionType EntityManager::GetEntityVersion(const Entity& entity)
 {
-    return entity.ID & ENTITY_INDEX_MASK;
+    return entity.ID & ENTITY_VERSION_MASK;
 }
 
 
 EntityVersionType EntityManager::GetEntityVersion(EntityIDType entityID)
 {
-    return entityID & ENTITY_INDEX_MASK;
+    return entityID & ENTITY_VERSION_MASK;
 }
 
 bool EntityManager::IsValid(const Entity& entity) const
 {
+    // [DEBUG]
+    std::cout << '\n';
+    std::cout << "EntityManager address: " << &EntityManager::Get() << '\n';
+
+    std::cout << "当前所有实体版本号: ";
+    for (size_t i = 0; i < EntityVersions.size(); ++i)
+    {
+        std::cout << "[" << i << ": " << EntityVersions[i] << "] " << " ";
+    }
+
+    std::cout << '\n' << "Entity ID: " << entity.ID << '\n';
+
     if (entity.ID == INVALID_ENTITYID)
     {
         return false;
@@ -52,6 +67,8 @@ bool EntityManager::IsValid(const Entity& entity) const
     EntityIndexType   index{};
     EntityVersionType version{};
     DecodeEntity(entity, index, version);
+
+    std::cout << "Decoded Index: " << index << ", Version: " << version << '\n';
 
     return index < EntityVersions.size() && EntityVersions[index] == version;
 }
@@ -65,7 +82,7 @@ bool EntityManager::IsValid(EntityIDType entityID) const
     }
 
     EntityIndexType   index = entityID >> ENTITY_INDEX_SHIFT;
-    EntityVersionType version = entityID & ENTITY_INDEX_MASK;
+    EntityVersionType version = entityID & ENTITY_VERSION_MASK;
 
     return index < EntityVersions.size() && EntityVersions[index] == version;
 }
@@ -100,8 +117,12 @@ Entity EntityManager::CreateEntity()
 
 void EntityManager::DestroyEntity(const Entity& entity)
 {
+    // [DEBUG]
+    std::cout << '\n';
+    std::cout << "Destroying Entity ID: " << entity.ID << '\n';
+
     EntityIndexType   index = entity.ID >> ENTITY_INDEX_SHIFT;
-    EntityVersionType version = entity.ID & ENTITY_INDEX_MASK;
+    EntityVersionType version = entity.ID & ENTITY_VERSION_MASK;
 
     if (IsValid(entity.ID))
     {
@@ -110,7 +131,7 @@ void EntityManager::DestroyEntity(const Entity& entity)
         EntityVersions[index] = version;
 
         // 组合新的ID并回收
-        EntityIDType newID = (index << ENTITY_INDEX_SHIFT) | version;
+        EntityIDType newID = (static_cast<EntityIDType>(index) << ENTITY_INDEX_SHIFT) | version;
 
         RecycledIDs.push(newID);
     }

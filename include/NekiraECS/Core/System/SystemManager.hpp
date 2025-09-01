@@ -21,6 +21,7 @@ namespace NekiraECS
 // 系统管理器
 class SystemManager final : public TSingleton<SystemManager>
 {
+
 private:
     // 系统分组映射
     std::unordered_map<SystemGroup, SystemContainerHandle> SystemGroups;

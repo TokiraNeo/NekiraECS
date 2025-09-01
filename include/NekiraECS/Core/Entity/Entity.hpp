@@ -28,11 +28,18 @@ public:
     Entity() : ID(INVALID_ENTITYID)
     {}
 
+    Entity(const Entity& other) = default;
+    Entity(Entity&& other) noexcept = default;
+
+    Entity& operator=(const Entity& other) = default;
+    Entity& operator=(Entity&& other) noexcept = default;
+
+    ~Entity() = default;
+
 private:
     // 私有构造函数，仅允许EntityManager创建实体
     explicit Entity(EntityIDType id) : ID(id)
     {}
-
 
     // 实体的唯一标识符
     // 由索引和版本组成 (高16位为索引，低16位为版本)

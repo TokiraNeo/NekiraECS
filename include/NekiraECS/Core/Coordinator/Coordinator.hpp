@@ -10,6 +10,7 @@
 
 
 #include <NekiraECS/Core/Component/ComponentManager.hpp>
+#include <NekiraECS/Core/Entity/Entity.hpp>
 #include <NekiraECS/Core/System/SystemManager.hpp>
 
 
@@ -47,7 +48,11 @@ public:
         requires std::is_base_of_v<Component<T>, T>
     static void AddComponent(const Entity& entity, Args&&... args)
     {
-        ComponentManager::Get().AddComponent<T>(entity, std::forward<Args>(args)...);
+        if (CheckEntity(entity))
+        {
+            auto entityIndex = EntityManager::GetEntityIndex(entity);
+            ComponentManager::Get().AddComponent<T>(entityIndex, std::forward<Args>(args)...);
+        }
     }
 
     // 获取组件，如果不存在或实体无效则返回nullptr
@@ -55,7 +60,13 @@ public:
         requires std::is_base_of_v<Component<T>, T>
     static T* GetComponent(const Entity& entity)
     {
-        return ComponentManager::Get().GetComponent<T>(entity);
+        if (!CheckEntity(entity))
+        {
+            return nullptr;
+        }
+
+        auto entityIndex = EntityManager::GetEntityIndex(entity);
+        return ComponentManager::Get().GetComponent<T>(entityIndex);
     }
 
     // 是否拥有该组件
@@ -63,7 +74,13 @@ public:
         requires std::is_base_of_v<Component<T>, T>
     static bool HasComponent(const Entity& entity)
     {
-        return ComponentManager::Get().HasComponent<T>(entity);
+        if (!CheckEntity(entity))
+        {
+            return false;
+        }
+
+        auto entityIndex = EntityManager::GetEntityIndex(entity);
+        return ComponentManager::Get().HasComponent<T>(entityIndex);
     }
 
     // 移除Entity的某个组件
@@ -71,7 +88,11 @@ public:
         requires std::is_base_of_v<Component<T>, T>
     static void RemoveComponent(const Entity& entity)
     {
-        ComponentManager::Get().RemoveComponent<T>(entity);
+        if (CheckEntity(entity))
+        {
+            auto entityIndex = EntityManager::GetEntityIndex(entity);
+            ComponentManager::Get().RemoveComponent<T>(entityIndex);
+        }
     }
 
     // 移除Entity的所有组件
