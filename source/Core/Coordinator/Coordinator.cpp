@@ -26,10 +26,13 @@ Entity Coordinator::CreateEntity()
 
 void Coordinator::DestroyEntity(const Entity& entity)
 {
-    // 移除实体的所有组件
-    ComponentManager::Get().RemoveEntityAllComponents(entity);
+    if (CheckEntity(entity))
+    {
+        // 移除实体的所有组件
+        ComponentManager::Get().RemoveEntityAllComponents(EntityManager::GetEntityIndex(entity));
 
-    EntityManager::Get().DestroyEntity(entity);
+        EntityManager::Get().DestroyEntity(entity);
+    }
 }
 
 void Coordinator::ForEachEntity(const std::function<void(const Entity&)>& callback)
@@ -39,7 +42,11 @@ void Coordinator::ForEachEntity(const std::function<void(const Entity&)>& callba
 
 void Coordinator::RemoveEntityAllComponents(const Entity& entity)
 {
-    ComponentManager::Get().RemoveEntityAllComponents(entity);
+    if (CheckEntity(entity))
+    {
+        auto entityIndex = EntityManager::GetEntityIndex(entity);
+        ComponentManager::Get().RemoveEntityAllComponents(entityIndex);
+    }
 }
 
 

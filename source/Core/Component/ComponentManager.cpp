@@ -10,15 +10,8 @@
 
 namespace NekiraECS
 {
-void ComponentManager::RemoveEntityAllComponents(const Entity& entity)
+void ComponentManager::RemoveEntityAllComponents(EntityIndexType entityIndex)
 {
-    if (!EntityManager::Get().IsValid(entity))
-    {
-        return;
-    }
-
-    auto entityIndex = EntityManager::GetEntityIndex(entity);
-
     for (auto& [compType, compArray] : ComponentArrays)
     {
         compArray->RemoveComponent(entityIndex);
