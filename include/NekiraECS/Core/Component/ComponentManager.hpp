@@ -9,19 +9,18 @@
 #pragma once
 
 #include <NekiraECS/Core/Component/ComponentArray.hpp>
-#include <NekiraECS/Core/Template/TSingleton.hpp>
 #include <unordered_map>
 #include <utility>
 
-// [DEBUG]
-#include <iostream>
 
 namespace NekiraECS
 {
 // 组件管理器
-class ComponentManager final : public TSingleton<ComponentManager>
+class ComponentManager final
 {
 public:
+    static ComponentManager& Get();
+
     // 添加组件
     template <typename T, typename... Args>
         requires std::is_base_of_v<Component<T>, T>
@@ -32,15 +31,9 @@ public:
         // 如果该类型的组件数组不存在，则创建一个新的
         if (!ComponentArrays.contains(compTypeIndex))
         {
-            // [DEBUG]
-            std::cout << "Creating component array for type: " << typeid(T).name() << '\n';
-
             auto handle = MakeComponentArrayHandle<T>();
             ComponentArrays[compTypeIndex] = std::move(handle);
         }
-
-        // [DEBUG]
-        std::cout << "Added component of type: " << typeid(T).name() << " to entity index: " << entityIndex << '\n';
 
         auto* compArray = ComponentArrays[compTypeIndex].As<T>();
 
@@ -143,6 +136,15 @@ public:
     }
 
 private:
+    ComponentManager() = default;
+    ~ComponentManager() = default;
+
+    ComponentManager(const ComponentManager&) = delete;
+    ComponentManager(ComponentManager&&) noexcept = delete;
+
+    ComponentManager& operator=(const ComponentManager&) = delete;
+    ComponentManager& operator=(ComponentManager&&) noexcept = delete;
+
     // 每种组件类型对应的组件数组
     std::unordered_map<std::type_index, ComponentArrayHandle> ComponentArrays;
 };

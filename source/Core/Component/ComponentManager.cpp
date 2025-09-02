@@ -10,6 +10,13 @@
 
 namespace NekiraECS
 {
+
+ComponentManager& ComponentManager::Get()
+{
+    static ComponentManager instance;
+    return instance;
+}
+
 void ComponentManager::RemoveEntityAllComponents(EntityIndexType entityIndex)
 {
     for (auto& [compType, compArray] : ComponentArrays)

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <NekiraECS/Core/Primary/PrimaryType.hpp>
-#include <NekiraECS/Core/Template/TSingleton.hpp>
 #include <functional>
 #include <stack>
 #include <vector>
@@ -55,9 +54,12 @@ namespace NekiraECS
 {
 
 // 实体管理器单例
-class EntityManager final : public TSingleton<EntityManager>
+class EntityManager final
 {
 public:
+    // 获取单例实例
+    static EntityManager& Get();
+
     // 解析实体
     static void DecodeEntity(const Entity& entity, EntityIndexType& outIndex, EntityVersionType& outVersion);
 
@@ -86,6 +88,15 @@ public:
     void ForEachEntity(const std::function<void(const Entity&)>& callback) const;
 
 private:
+    EntityManager() = default;
+    ~EntityManager() = default;
+
+    EntityManager(const EntityManager& other) = delete;
+    EntityManager(EntityManager&& other) noexcept = delete;
+
+    EntityManager& operator=(const EntityManager& other) = delete;
+    EntityManager& operator=(EntityManager&& other) noexcept = delete;
+
     // 每个实体的版本号 EntityIndex -> EntityVersion
     std::vector<EntityVersionType> EntityVersions;
 

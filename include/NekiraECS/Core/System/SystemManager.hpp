@@ -9,7 +9,6 @@
 #pragma once
 
 #include <NekiraECS/Core/System/SystemContainer.hpp>
-#include <NekiraECS/Core/Template/TSingleton.hpp>
 #include <typeindex>
 #include <unordered_map>
 
@@ -19,10 +18,21 @@ namespace NekiraECS
 {
 
 // 系统管理器
-class SystemManager final : public TSingleton<SystemManager>
+class SystemManager final
 {
+public:
+    static SystemManager& Get();
 
 private:
+    SystemManager() = default;
+    ~SystemManager() = default;
+
+    SystemManager(const SystemManager&) = delete;
+    SystemManager(SystemManager&&) noexcept = delete;
+
+    SystemManager& operator=(const SystemManager&) = delete;
+    SystemManager& operator=(SystemManager&&) noexcept = delete;
+
     // 系统分组映射
     std::unordered_map<SystemGroup, SystemContainerHandle> SystemGroups;
 

@@ -14,6 +14,12 @@
 namespace NekiraECS
 {
 
+Coordinator& Coordinator::Get()
+{
+    static Coordinator instance;
+    return instance;
+}
+
 bool Coordinator::CheckEntity(const Entity& entity)
 {
     return EntityManager::Get().IsValid(entity);
