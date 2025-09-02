@@ -19,9 +19,11 @@ namespace NekiraECS
 {
 
 // 协调器，负责协调实体、组件和系统
-class Coordinator final : public TSingleton<Coordinator>
+class Coordinator final
 {
 public:
+    static Coordinator& Get();
+
     // ===============================
     // Entity Management
     // ===============================
@@ -135,6 +137,14 @@ public:
     }
 
 private:
+    Coordinator() = default;
+    ~Coordinator() = default;
+
+    Coordinator(const Coordinator&) = delete;
+    Coordinator(Coordinator&&) noexcept = delete;
+
+    Coordinator& operator=(const Coordinator&) = delete;
+    Coordinator& operator=(Coordinator&&) noexcept = delete;
 };
 
 } // namespace NekiraECS

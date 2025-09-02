@@ -16,8 +16,6 @@
 #include <type_traits>
 #include <vector>
 
-// [DEBUG]
-#include <iostream>
 
 namespace NekiraECS
 {
@@ -62,9 +60,6 @@ public:
     template <typename... Args>
     void AddComponent(EntityIndexType entityIndex, Args&&... args)
     {
-        // [DEBUG]
-        std::cout << "Adding component for entity index: " << entityIndex << '\n';
-
         // 如果已存在，则替换
         if (entityIndex < ComponentIndices.size())
         {

@@ -11,6 +11,13 @@
 
 namespace NekiraECS
 {
+SystemManager& SystemManager::Get()
+{
+    static SystemManager instance;
+    return instance;
+}
+
+
 void SystemManager::MarkGroupDirty(SystemGroup group)
 {
     auto it = std::ranges::find(DirtyGroups, group);

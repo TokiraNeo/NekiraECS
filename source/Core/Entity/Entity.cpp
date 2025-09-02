@@ -8,11 +8,15 @@
 
 #include <Entity/Entity.hpp>
 
-// [DEBUG]
-#include <iostream>
 
 namespace NekiraECS
 {
+
+EntityManager& EntityManager::Get()
+{
+    static EntityManager instance;
+    return instance;
+}
 
 void EntityManager::DecodeEntity(const Entity& entity, EntityIndexType& outIndex, EntityVersionType& outVersion)
 {
@@ -47,18 +51,6 @@ EntityVersionType EntityManager::GetEntityVersion(EntityIDType entityID)
 
 bool EntityManager::IsValid(const Entity& entity) const
 {
-    // [DEBUG]
-    std::cout << '\n';
-    std::cout << "EntityManager address: " << &EntityManager::Get() << '\n';
-
-    std::cout << "当前所有实体版本号: ";
-    for (size_t i = 0; i < EntityVersions.size(); ++i)
-    {
-        std::cout << "[" << i << ": " << EntityVersions[i] << "] ";
-    }
-
-    std::cout << '\n' << "Entity ID: " << entity.ID << '\n';
-
     if (entity.ID == INVALID_ENTITYID)
     {
         return false;
@@ -67,8 +59,6 @@ bool EntityManager::IsValid(const Entity& entity) const
     EntityIndexType   index{};
     EntityVersionType version{};
     DecodeEntity(entity, index, version);
-
-    std::cout << "Decoded Index: " << index << ", Version: " << version << '\n';
 
     return index < EntityVersions.size() && EntityVersions[index] == version;
 }
@@ -117,10 +107,6 @@ Entity EntityManager::CreateEntity()
 
 void EntityManager::DestroyEntity(const Entity& entity)
 {
-    // [DEBUG]
-    std::cout << '\n';
-    std::cout << "Destroying Entity ID: " << entity.ID << '\n';
-
     EntityIndexType   index = entity.ID >> ENTITY_INDEX_SHIFT;
     EntityVersionType version = entity.ID & ENTITY_VERSION_MASK;
 

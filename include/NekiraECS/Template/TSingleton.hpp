@@ -8,6 +8,10 @@
 
 #pragma once
 
+/**
+ * @[INFO] 该方案实际上在dll中会导致静态变量实例化多次的问题，所以已被弃用。这里将其移出Core模块
+ */
+
 namespace NekiraECS
 {
 
