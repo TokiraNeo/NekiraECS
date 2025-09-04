@@ -7,6 +7,7 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/TokiraNeo/NekiraECS?style=flat-square&labelColor=91CBED&color=A0AEDE)
 
 <!-- CI/CD Status Badges -->
+
 ![CI](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/ci.yml?branch=main&style=flat-square&label=CI&color=%2300d4aa)
 ![Code Quality](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/code-quality.yml?branch=main&style=flat-square&label=Code%20Quality&color=%23ff6b6b)
 ![Documentation](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/documentation.yml?branch=main&style=flat-square&label=Docs&color=%234ecdc4)
@@ -24,29 +25,55 @@ NekiraECSLib is a C++20-based ECS (Entity Component System) framework library.
 This project integrates a complete continuous integration and continuous deployment pipeline:
 
 ### 🔧 Continuous Integration (CI)
+
 - **Multi-platform builds**: Supports Linux, Windows, macOS
 - **Multi-compiler support**: GCC, Clang, MSVC
 - **Automated testing**: Full test suite runs on every commit
 - **Code quality checks**: Automatic code formatting and static analysis
 
 ### 📊 Code Quality
+
 - **Format checking**: Uses clang-format to ensure consistent code style
 - **Static analysis**: Uses clang-tidy for code quality analysis
 - **Security scanning**: Integrates CodeQL for security vulnerability detection
 
 ### 🚀 Automated Releases
+
 - **Version tagging**: Pushing version tags automatically triggers release workflow
 - **Build artifacts**: Automatically builds release packages for multiple platforms
 - **GitHub Releases**: Automatically creates GitHub release pages
 
 ### 📚 Documentation Generation
+
 - **API documentation**: Automatically generates and publishes Doxygen documentation
 - **Documentation checks**: Validates documentation completeness and link validity
 
-## Status
+## License
 
-- [x] CI/CD integration completed
-- [ ] Under construction
+[![License](https://img.shields.io/badge/License-MIT-38E575?style=for-the-badge)](/LICENSE)
+
+## Installation
+
+Clone the repository locally and build using CMake:
+
+```cmake
+cmake -S . -B build -G "Ninja"
+cmake --build build
+cmake --install build [--prefix] [install_dir]
+```
+
+## Linking the Library
+
+```cmake
+find_package(NekiraECSLib REQUIRED)
+
+target_link_libraries(YourTarget PRIVATE NekiraECSLib::NekiraECSCore)
+target_include_directories(YourTarget PRIVATE ${NekiraECSLib_INCLUDE_DIRS})
+```
+
+## Documentation
+
+[![NekiraECSCore](https://img.shields.io/badge/NekiraECSCore-%2372B0FD?style=for-the-badge&labelColor=%2372B0FD&color=%2372B0FD)](/Documents/NekiraECSCore/NekiraECSCore.EN.MD)
 
 ## License
 

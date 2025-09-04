@@ -7,6 +7,7 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/TokiraNeo/NekiraECS?style=flat-square&labelColor=91CBED&color=A0AEDE)
 
 <!-- CI/CD Status Badges -->
+
 ![CI](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/ci.yml?branch=main&style=flat-square&label=CI&color=%2300d4aa)
 ![Code Quality](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/code-quality.yml?branch=main&style=flat-square&label=Code%20Quality&color=%23ff6b6b)
 ![Documentation](https://img.shields.io/github/actions/workflow/status/TokiraNeo/NekiraECS/documentation.yml?branch=main&style=flat-square&label=Docs&color=%234ecdc4)
@@ -24,31 +25,52 @@ NekiraECSLib 是基于 C++20 的 ECS 框架库。
 本项目集成了完整的持续集成和持续部署流程：
 
 ### 🔧 持续集成 (CI)
+
 - **多平台构建**: 支持 Linux、Windows、macOS
 - **多编译器支持**: GCC、Clang、MSVC
 - **自动化测试**: 每次提交都会运行完整的测试套件
 - **代码质量检查**: 自动检查代码格式和静态分析
 
 ### 📊 代码质量
+
 - **格式检查**: 使用 clang-format 确保代码风格一致
 - **静态分析**: 使用 clang-tidy 进行代码质量分析
 - **安全扫描**: 集成 CodeQL 进行安全漏洞检测
 
 ### 🚀 自动化发布
+
 - **版本标签**: 推送版本标签自动触发发布流程
 - **构建产物**: 自动构建多平台的发布包
 - **GitHub Releases**: 自动创建 GitHub 发布页面
 
 ### 📚 文档生成
+
 - **API 文档**: 自动生成并发布 Doxygen 文档
 - **文档检查**: 验证文档完整性和链接有效性
 
-## 事项
+## 安装
 
-- [x] CI/CD 集成完成
-- [ ] 构建中
+克隆仓库至本地，使用 cmake 构建
+
+```cmake
+cmake -S . -B build -G "Ninja"
+cmake --build build
+cmake --install build [--prefix] [install_dir]
+```
+
+## 链接库
+
+```cmake
+find_package(NekiraECSLib REQUIRED)
+
+target_link_libraries(YourTarget PRIVATE NekiraECSLib::NekiraECSCore)
+target_include_directories(YourTarget PRIVATE ${NekiraECSLib_INCLUDE_DIRS})
+```
+
+## 文档
+
+[![NekiraECSCore](https://img.shields.io/badge/NekiraECSCore-%2372B0FD?style=for-the-badge&labelColor=%2372B0FD&color=%2372B0FD)](/Documents/NekiraECSCore/NekiraECSCore.CN.MD)
 
 ## License
 
 [![License](https://img.shields.io/badge/License-MIT-38E575?style=for-the-badge)](/LICENSE)
-
