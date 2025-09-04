@@ -20,6 +20,14 @@
 
 NekiraECSLib 是基于 C++20 的 ECS 框架库。
 
+## 事项
+
+- [x] 基础的 Entity、Component、System、Coordinator
+- [x] 基于稀疏集的基本 ECS 框架
+- [ ] 组件存储的进一步优化
+- [ ] 多组件的 view 查询机制
+- [ ] 事件系统、缓存系统、任务流程系统
+
 ## CI/CD
 
 本项目集成了完整的持续集成和持续部署流程：
