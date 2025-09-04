@@ -7,9 +7,9 @@ permissions:
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, SparseSet-Version]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   format-check:
