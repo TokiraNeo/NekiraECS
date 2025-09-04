@@ -112,6 +112,9 @@ public:
     // System Management
     // ===============================
 
+    // 更新所有系统
+    static void UpdateSystems(float deltaTime);
+
     // 注册系统
     template <typename T, typename... Args>
         requires std::is_base_of_v<System<T>, T>

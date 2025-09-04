@@ -55,5 +55,9 @@ void Coordinator::RemoveEntityAllComponents(const Entity& entity)
     }
 }
 
+void Coordinator::UpdateSystems(float deltaTime)
+{
+    SystemManager::Get().Update(deltaTime);
+}
 
 } // namespace NekiraECS

@@ -93,6 +93,14 @@ public:
         requires std::is_base_of_v<System<T>, T>
     void RemoveSystem()
     {
+        /**
+         * @[NOTE] 这里其实有点不是很优雅，既然都创建临时对象了，那其实都能直接通过这个临时对象调用OnDeInitialize()了
+         * 这样做导致每次RemoveSystem都会创建一个临时对象，感觉不是很合理
+         * 如果有动态反射的话，这里其实可以直接通过反射信息来得到group
+         * 虽然我已经有了NekiraReflectionLib这个反射库，但将其引入到NekiraECS中，又只是在这里用一下，感觉也不是很合适
+         * 而且即便引入NekiraReflectionLib,又需要规定外部在定义System时，需要按要求对其进行动态反射注册，这又增加了使用成本
+         * 更何况。。。为什么外部一定要用我自己的NekiraReflectionLib呢🤣🤣🤣🤣🤣
+         */
         SystemGroup group = T().GetGroup();
 
         auto type = std::type_index(typeid(T));
