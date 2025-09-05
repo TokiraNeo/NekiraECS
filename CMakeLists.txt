@@ -29,7 +29,7 @@ add_subdirectory(include/NekiraECS)
 # ==============================================
 
 # 定义包含的模块
-set(Module_Targets NekiraECSCore)
+set(Module_Targets NekiraECSCore NekiraECSTasks)
 
 # 收集所有模块目标
 set(NekiraECSLib_Modules)
