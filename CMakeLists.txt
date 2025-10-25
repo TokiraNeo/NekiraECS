@@ -3,7 +3,7 @@
 # ==============================================
 
 cmake_minimum_required(VERSION 3.20)
-Project(NekiraECSLib LANGUAGES CXX VERSION 1.0.0)
+Project(NekiraECSLib LANGUAGES CXX VERSION 1.0.4)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -29,7 +29,7 @@ add_subdirectory(include/NekiraECS)
 # ==============================================
 
 # 定义包含的模块
-set(Module_Targets NekiraECSCore NekiraECSTasks)
+set(Module_Targets NekiraECSCore)
 
 # 收集所有模块目标
 set(NekiraECSLib_Modules)
