@@ -20,6 +20,8 @@ EntityManager& EntityManager::Get()
 
 void EntityManager::DecodeEntity(const Entity& entity, EntityIndexType& outIndex, EntityVersionType& outVersion)
 {
+    //@[INFO] C++的右移运算符对于无符号整数是逻辑右移，对于有符号整数是算术右移
+    // 这里的ID是无符号整数类型，所以右移时高位补0，这保证了右移后仍能得到正确的索引值
     outIndex = entity.ID >> ENTITY_INDEX_SHIFT;
 
     outVersion = entity.ID & ENTITY_VERSION_MASK;

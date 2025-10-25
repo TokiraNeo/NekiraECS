@@ -3,7 +3,7 @@
 # ==============================================
 
 cmake_minimum_required(VERSION 3.20)
-Project(NekiraECSLib LANGUAGES CXX VERSION 1.0.0)
+Project(NekiraECSLib LANGUAGES CXX VERSION 1.0.4)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
